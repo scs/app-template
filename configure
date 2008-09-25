@@ -1,0 +1,78 @@
+#! /bin/bash
+# Script to generate the configuration '.config' file for the framework
+
+trim() {
+	# trim $1: cut of leading and trailing white space
+	# $1: the string to trim
+	
+	echo "$1" | grep -oE "[^ \t\n].*[^ \t\n]"
+}
+
+get_config() {
+	# get_config $1 $2: load a configuration from a configuration file
+	# $1: the name of the configuration file
+	# $2: name of the configuration
+	
+	if [ -e "$1" ]; then
+		trim "$(grep -E "^$2" < $1 | cut -d "=" -f 2)"
+	fi
+}
+
+read_config() {
+	# read_config $1: read settings from a configuration file
+	# $1: name of the configuration file
+	
+	local NAME, VALUE
+	
+	cat "$1" | while read i; do
+		NAME=$(trim $(echo $i | cut -d "=" -f 1))
+		VALUE=$(trim $(echo $i | cut -d "=" -f 2))
+		
+		eval $NAME="$VALUE"
+	done
+}
+
+ask() {
+	# ask $1 $2: ask the user something and return the answer
+	# $1: the default value
+	# $2: the prompt
+	
+	local REPLY
+	
+	read -e -p "$2 [$1]: "
+	[ "$REPLY" ] && echo "$REPLY" || echo "$1"
+}
+
+# global parameters
+CONFIG_FILE=".config"
+CONFIG_NAMES=(CONFIG_FRAMEWORK CONFIG_TARGET_IP)
+CONFIG_PROMPTS=("Enter the path to the framework you want to use", "Enter the IP address of the target device")
+CONFIG_VALUES=("../oscar" "")
+
+# load the configurations
+for i in ${!CONFIG_NAMES[*]}; do
+	NAME=${CONFIG_NAMES[$i]}
+	VALUE=$(get_config "$CONFIG_FILE" "$NAME")
+
+	[ "$VALUE" ] && CONFIG_VALUES[$i]=$VALUE
+done
+
+# ask the user about configurations
+for i in ${!CONFIG_NAMES[*]}; do
+	PROMPT=${CONFIG_PROMPTS[$i]}
+	VALUE=${CONFIG_VALUES[$i]}
+	
+	CONFIG_VALUES[$i]=$(ask "$VALUE" "$PROMPT")
+done
+
+# write the configuration file
+rm -f "${CONFIG_FILE}_new"
+for i in ${!CONFIG_NAMES[*]}; do
+	NAME=${CONFIG_NAMES[$i]}
+	VALUE=${CONFIG_VALUES[$i]}
+	
+	echo "$NAME = $VALUE" >> "${CONFIG_FILE}_new"
+done
+mv -f "${CONFIG_FILE}_new" "${CONFIG_FILE}"
+
+exit 0

@@ -1,0 +1,22 @@
+# Ignore working files
+lcv_log
+lcv_simlog
+template_host
+template_target
+
+# Ignore generated binaries
+*.[oa]
+*.gdb
+
+# Ignore files used by the build system
+inc
+lib
+doc
+lgx
+.metadata
+.settings
+.config
+
+# Mac OS X meta data on filesystems that do not support it
+._*
+.DS_Store
