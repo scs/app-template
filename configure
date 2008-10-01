@@ -63,7 +63,7 @@ ask() {
 CONFIG_FILE=".config"
 CONFIG_NAMES=(CONFIG_FRAMEWORK CONFIG_TARGET_IP)
 CONFIG_PROMPTS=("Enter the path to the framework you want to use", "Enter the IP address of the target device")
-CONFIG_VALUES=("../oscar" "")
+CONFIG_VALUES=("../../oscar" "")
 
 # load the configurations
 for i in ${!CONFIG_NAMES[*]}; do
