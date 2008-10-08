@@ -96,15 +96,13 @@ get :
 # deploying to the device
 .PHONY : deploy
 deploy : $(OUT)$(TARGET_SUFFIX)
-	scp -rp $(OUT)$(TARGET_SUFFIX) root@$(CONFIG_TARGET_IP):/app/
-	scp -rp CGI/www.tar.gz root@$(CONFIG_TARGET_IP):/app/
+	@ scp -rp $(OUT)$(TARGET_SUFFIX) CGI/www.tar.gz root@$(CONFIG_TARGET_IP):/mnt/app/ || echo -n ""
 	@ echo "Application deployed."
 
 # deploying the simulation binary to the device
 .PHONY : deploysim
 deploysim : $(OUT)$(TARGETSIM_SUFFIX)
-	scp -rp $(OUT)$(TARGETSIM_SUFFIX) root@$(CONFIG_TARGET_IP):/app/
-	scp -rp CGI/www.tar.gz root@$(CONFIG_TARGET_IP):/app/
+	@scp -rp $(OUT)$(TARGETSIM_SUFFIX) root@$(CONFIG_TARGET_IP):/mnt/app/ || echo -n ""
 	@ echo "Application deployed."
 
 # Cleanup
