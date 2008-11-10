@@ -130,7 +130,7 @@ static OSC_ERR init(const int argc, const char * argv[])
 		goto ipc_err;
 	}
 	
-	err |= PerspectiveCfgStr2Enum("DEFAULT", &data.perspective);
+	err |= OscCamPerspectiveStr2Enum("DEFAULT", &data.perspective);
 	if ( err != SUCCESS)
 	{
 		OscLog(WARN, "%s: No (valid) camera-scene perspective defined in EEPROM or no EEPROM found, use default.\n", __func__);
