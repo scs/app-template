@@ -5,13 +5,13 @@ TARGET_SUFFIX = _target
 
 # Host-Compiler executables and flags
 HOST_CC = gcc 
-HOST_CFLAGS = $(HOST_FEATURES) -Wall -pedantic -DOSC_HOST -g
+HOST_CFLAGS = $(HOST_FEATURES) -Wall -Wno-long-long -pedantic -DOSC_HOST -g
 HOST_LDFLAGS = -lm
 
 # Cross-Compiler executables and flags
 TARGET_CC = bfin-uclinux-gcc 
-TARGET_CFLAGS = -Wall -pedantic -O2 -DOSC_TARGET
-TARGETDBG_CFLAGS = -Wall -pedantic -ggdb3 -DOSC_TARGET
+TARGET_CFLAGS = -Wall -Wno-long-long -pedantic -O2 -DOSC_TARGET
+TARGETDBG_CFLAGS = -Wall -Wno-long-long -pedantic -ggdb3 -DOSC_TARGET
 TARGET_LDFLAGS = -Wl,-elf2flt="-s 1048576"
 
 # Source files of the application
