@@ -1,12 +1,13 @@
 #! /usr/bin/env bash
 # do-release [ <action> ]
+# This script is used to bring the working directory into a shape where it can be released as a tar Archive.
 
 [ "$1" ] && OPT_ACTION=$1 || OPT_ACTION="release"
 
 if [ "$OPT_ACTION" == "release" ]; then
 	rm -f "do-tag" "do-release"
 elif [ "$OPT_ACTION" == "name" ]; then
-	echo "Application Template"
+	echo "App-Template"
 else
 	echo "Unknown action: $OPT_ACTION" >&2; exit 1
 fi
