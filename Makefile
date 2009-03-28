@@ -48,7 +48,7 @@ target: $(SOURCES) inc/*.h lib/libosc_target.a
 	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGET_CFLAGS) \
 	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
 	@echo "Target executable done."
-	make target -C CGI
+	make target -C cgi
 	@echo "Target CGI done."
 	[ -d /tftpboot ] && cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT); exit 0
 	
@@ -57,7 +57,7 @@ targetdbg: $(SOURCES) inc/*.h lib/libosc_target.a
 	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGETDBG_CFLAGS) \
 	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
 	@echo "Target executable done."
-	make targetdbg -C CGI
+	make targetdbg -C cgi
 	@echo "Target CGI done."
 	[ -d /tftpboot ] && cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT); exit 0
 	
@@ -66,7 +66,7 @@ targetsim: $(SOURCES) inc/*.h lib/libosc_target_sim.a
 	$(TARGET_CC) $(SOURCES) lib/libosc_target_sim.a $(TARGETSIM_CFLAGS) \
 	$(TARGET_LDFLAGS) -o $(OUT)$(TARGETSIM_SUFFIX)
 	@echo "Target executable done."
-	make target -C CGI
+	make target -C cgi
 	@echo "Target CGI done."
 	[ -d /tftpboot ] && cp $(OUT)$(TARGETSIM_SUFFIX) /tftpboot/$(OUT); exit 0
 	
@@ -75,7 +75,7 @@ host: $(SOURCES) inc/*.h lib/libosc_host.a
 	$(HOST_CC) $(SOURCES) lib/libosc_host.a $(HOST_CFLAGS) \
 	$(HOST_LDFLAGS) -o $(OUT)$(HOST_SUFFIX)
 	@echo "Host executable done."
-	make host -C CGI
+	make host -C cgi
 	@echo "Host CGI done."
 	cp $(OUT)$(HOST_SUFFIX) $(OUT)
 
@@ -96,7 +96,7 @@ get :
 # deploying to the device
 .PHONY : deploy
 deploy : $(OUT)$(TARGET_SUFFIX)
-	@ scp -rp $(OUT)$(TARGET_SUFFIX) CGI/www.tar.gz root@$(CONFIG_TARGET_IP):/mnt/app/ || echo -n ""
+	@ scp -rp $(OUT)$(TARGET_SUFFIX) cgi/www.tar.gz root@$(CONFIG_TARGET_IP):/mnt/app/ || echo -n ""
 	@ echo "Application deployed."
 
 # deploying the simulation binary to the device
@@ -110,7 +110,7 @@ deploysim : $(OUT)$(TARGETSIM_SUFFIX)
 clean :	
 	rm -f $(OUT)$(HOST_SUFFIX) $(OUT)$(TARGET_SUFFIX) $(OUT)$(TARGETSIM_SUFFIX)
 	rm -f *.o *.gdb
-	$(MAKE) clean -C CGI
+	$(MAKE) clean -C cgi
 	@ echo "Directory cleaned"
 
 # Cleans everything not intended for source distribution
