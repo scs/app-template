@@ -22,7 +22,7 @@
 #ifndef DEBUG_H_
 #define DEBUG_H_
 
-#include "inc/oscar.h"
+#include "oscar/staging/inc/oscar.h"
 /*********************************************************************//*!
  * @brief Write an image in int16 (or fract16) format to file (BMP)
  * for testing purposes.

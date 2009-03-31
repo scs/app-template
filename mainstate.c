@@ -21,7 +21,8 @@
  * 
  * Makes use of Framework HSM module.
 	************************************************************************/
-	#include "template.h"
+
+#include "template.h"
 #include "mainstate.h"
 #include <string.h>
 #include <stdlib.h>
@@ -250,7 +251,7 @@ OSC_ERR StateControl( void)
 {
 	OSC_ERR camErr, err;
 	MainState mainState;
-	void *pCurRawImg = NULL;
+	uint8 *pCurRawImg = NULL;
 	
 	/* Setup main state machine */
 	MainStateConstruct(&mainState);
@@ -285,7 +286,7 @@ OSC_ERR StateControl( void)
 				return err;
 			}
 			
-			camErr = OscCamReadPicture(OSC_CAM_MULTI_BUFFER, (void**)&pCurRawImg, 0, CAMERA_TIMEOUT);
+			camErr = OscCamReadPicture(OSC_CAM_MULTI_BUFFER, &pCurRawImg, 0, CAMERA_TIMEOUT);
 			if (camErr != -ETIMEOUT)
 			{
 				/* Anything other than a timeout means that we should

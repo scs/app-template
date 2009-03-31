@@ -1,120 +1,115 @@
-# The executable name is suffix depending on the target
-OUT = template
-HOST_SUFFIX = _host
-TARGET_SUFFIX = _target
-TARGETSIM_SUFFIX = _sim_target
+OBJECTS_app-template := debug.o ipc.o main.o mainstate.o process_frame.o
+OBJECTS_app-template_host := oscar/staging/lib/libosc_host.a
+OBJECTS_app-template_target := oscar/staging/lib/libosc_target.a
 
-# Disable make's built-in rules
-MAKEFLAGS += -r
+PRODUCTS := $(patsubst OBJECTS_%, %, $(filter OBJECTS_%, $(.VARIABLES)))
+PRODUCTS := $(filter-out $(addsuffix _host, $(PRODUCTS)) $(addsuffix _target, $(PRODUCTS)), $(PRODUCTS))
 
-# this includes the framework configuration
+SUBDIRS := cgi
+
+CLEAN_FILES := *.o *.gdb $(PRODUCTS) $(addsuffix _host, $(PRODUCTS)) $(addsuffix _target, $(PRODUCTS)) Makefile.deps
+CLEAN_FILES := $(wildcard $(CLEAN_FILES))
+
+PEDANTIC := -Wall
+OPTIMIZE := -O3
+
+HOST_LIBS := -lm
+TARGET_LIBS := -lbfdsp -lm
+
+FLT_OPTS := -elf2flt="-s 1048576"
+
+CC_STD := -std=gnu99
+
+CC_HOST := gcc -c -DOSC_HOST $(CC_STD) $(PEDANTIC) $(OPTIMIZE)
+LD_HOST := gcc -fPIC $(HOST_LIBS)
+
+CC_TARGET := bfin-uclinux-gcc -c -DOSC_TARGET $(CC_STD) $(PEDANTIC) $(OPTIMIZE)
+LD_TARGET := bfin-uclinux-gcc $(FLT_OPTS) $(TARGET_LIBS)
+
+SHELL := $(shell which bash)
+MAKE += --no-print-directory
+
 -include .config
 
-# decide whether we are building or dooing something other like cleaning or configuring
-ifeq ($(filter $(MAKECMDGOALS), clean distclean config), )
-  # check whether a .config file has been found
-  ifeq ($(filter .config, $(MAKEFILE_LIST)), )
-    $(error "Cannot make the target '$(MAKECMDGOALS)' without configuring the application. Please run make config to do this.")
-  endif
-endif
+.PHONY: all host target
+all: host target
 
-# Host-Compiler executables and flags
-HOST_CC = gcc 
-HOST_CFLAGS = $(HOST_FEATURES) -Wall -Wno-long-long -pedantic -DOSC_HOST -g
-HOST_LDFLAGS = -lm
+.PHONY: install
+install:
+	@ set -e; for i in $(SUBDIRS); do echo "MAKE     $@ => $$i/"; $(MAKE) -C $$i $@; done
 
-# Cross-Compiler executables and flags
-TARGET_CC = bfin-uclinux-gcc 
-TARGET_CFLAGS = -Wall -Wno-long-long -pedantic -O2 -DOSC_TARGET
-TARGETDBG_CFLAGS = -Wall -Wno-long-long -pedantic -ggdb3 -DOSC_TARGET
-TARGETSIM_CFLAGS = -Wall -Wno-long-long -pedantic -O2 -DOSC_TARGET -DOSC_SIM
-TARGET_LDFLAGS = -Wl,-elf2flt="-s 1048576" -lbfdsp
+.PHONY: host
+host: $(addsuffix _host, $(PRODUCTS))
+	@ set -e; for i in $(SUBDIRS); do echo "MAKE     $@ => $$i/"; $(MAKE) -C $$i $@; done
 
-# Source files of the application
-SOURCES = main.c debug.c mainstate.c ipc.c process_frame.c
+.PHONY: target
+target: $(addsuffix _target, $(PRODUCTS))
+	@ set -e; for i in $(SUBDIRS); do echo "MAKE     $@ => $$i/"; $(MAKE) -C $$i $@; done
 
-# Default target
-all : $(OUT)
+.PHONY: deploy
+deploy: target .config_
+	@ echo "SCP      runapp.sh app-template_target cgi/www.tar.gz => $(CONFIG_TARGET_IP):/opt"
+	@ scp -rp runapp.sh app-template_target cgi/www.tar.gz root@$(CONFIG_TARGET_IP):/opt || true
 
-$(OUT) : target host
+.PHONY: run
+run: .config_ $(filter deploy, $(MAKECMDGOALS))
+	@ echo "SSH      $(CONFIG_TARGET_IP)"
+	@ ssh root@$(CONFIG_TARGET_IP) /opt/runapp.sh || true
 
-# this target ensures that the application has beeb built prior to deployment
-$(OUT)_% :
-	@ echo "Please use make {target,targetdbg,targetsim} to build the application first"; exit 1
+.PHONY: config_
+.config_:
+	@ [ -e ".config" ] || $(MAKE) config
 
-# Compiles the executable
-target: $(SOURCES) inc/*.h lib/libosc_target.a
-	@echo "Compiling for target.."
-	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGET_CFLAGS) \
-	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
-	@echo "Target executable done."
-	make target -C cgi
-	@echo "Target CGI done."
-	[ -d /tftpboot ] && cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT); exit 0
-	
-targetdbg: $(SOURCES) inc/*.h lib/libosc_target.a
-	@echo "Compiling for target.."
-	$(TARGET_CC) $(SOURCES) lib/libosc_target.a $(TARGETDBG_CFLAGS) \
-	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
-	@echo "Target executable done."
-	make targetdbg -C cgi
-	@echo "Target CGI done."
-	[ -d /tftpboot ] && cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT); exit 0
-	
-targetsim: $(SOURCES) inc/*.h lib/libosc_target_sim.a
-	@echo "Compiling for target.."
-	$(TARGET_CC) $(SOURCES) lib/libosc_target_sim.a $(TARGETSIM_CFLAGS) \
-	$(TARGET_LDFLAGS) -o $(OUT)$(TARGETSIM_SUFFIX)
-	@echo "Target executable done."
-	make target -C cgi
-	@echo "Target CGI done."
-	[ -d /tftpboot ] && cp $(OUT)$(TARGETSIM_SUFFIX) /tftpboot/$(OUT); exit 0
-	
-host: $(SOURCES) inc/*.h lib/libosc_host.a
-	@echo "Compiling for host.."
-	$(HOST_CC) $(SOURCES) lib/libosc_host.a $(HOST_CFLAGS) \
-	$(HOST_LDFLAGS) -o $(OUT)$(HOST_SUFFIX)
-	@echo "Host executable done."
-	make host -C cgi
-	@echo "Host CGI done."
-	cp $(OUT)$(HOST_SUFFIX) $(OUT)
-
-# Target to explicitly start the configuration process
-.PHONY : config
-config :
+.PHONY: config
+config:
+	@ echo "CONFIG   .config"
 	@ ./configure
-	@ $(MAKE) --no-print-directory get
 
-# Set symlinks to the framework
-.PHONY : get
-get :
-	@ rm -rf inc lib
-	@ ln -s $(CONFIG_FRAMEWORK)/staging/inc ./inc
-	@ ln -s $(CONFIG_FRAMEWORK)/staging/lib ./lib
-	@ echo "Configured Oscar framework."
+.PHONY: get
+reconfigure:
+	@ echo "CONFIG   oscar/"
+ifeq '$(CONFIG_PRIVATE_FRAMEWORK)' 'n'
+	@ ln -fs $(CONFIG_FRAMEWORK_PATH) "oscar"
+endif
+	@ cd oscar; ./configure
 
-# deploying to the device
-.PHONY : deploy
-deploy : $(OUT)$(TARGET_SUFFIX)
-	@ scp -rp $(OUT)$(TARGET_SUFFIX) cgi/www.tar.gz root@$(CONFIG_TARGET_IP):/mnt/app/ || echo -n ""
-	@ echo "Application deployed."
+.SUFFIXES:
+Makefile.deps: $(SOURCES) $(MAKEFILE_LIST)
+	@ echo "DEPS     $?"
+	@ for i in $(SOURCES); do cpp -MM $$i; done > $@
+	@ echo "$@: $$(cut -d " " -f 2- < $@ | tr "\n" " ")" >> $@
 
-# deploying the simulation binary to the device
-.PHONY : deploysim
-deploysim : $(OUT)$(TARGETSIM_SUFFIX)
-	@scp -rp $(OUT)$(TARGETSIM_SUFFIX) root@$(CONFIG_TARGET_IP):/mnt/app/ || echo -n ""
-	@ echo "Application deployed."
+oscar/staging/inc/* oscar/staging/lib/*:
+	@ echo "MAKE     oscar"
+	@ $(MAKE) -C oscar
 
-# Cleanup
-.PHONY : clean
-clean :	
-	rm -f $(OUT)$(HOST_SUFFIX) $(OUT)$(TARGET_SUFFIX) $(OUT)$(TARGETSIM_SUFFIX)
-	rm -f *.o *.gdb
-	$(MAKE) clean -C cgi
-	@ echo "Directory cleaned"
+%_host.o: %.c $(MAKEFILE_LIST) oscar/staging/inc/*
+	@ echo "GCC      $*.c => $@"
+	@ $(CC_HOST) -o $@ $*.c
 
-# Cleans everything not intended for source distribution
-.PHONY : distclean
-distclean : clean
-	rm -f .config
-	rm -rf inc lib
+%_target.o: %.c $(MAKEFILE_LIST) oscar/staging/inc/*
+	@ echo "GCC_BF   $*.c => $@"
+	@ $(CC_TARGET) -o $@ $*.c
+
+.SECONDEXPANSION:
+$(addsuffix _host, $(PRODUCTS)): INPUTS = $(patsubst %.o,%_host.o,$(OBJECTS_$(patsubst %_host,%,$@))) $(OBJECTS_$@)
+$(addsuffix _host, $(PRODUCTS)): $$(INPUTS) $(MAKEFILE_LIST) oscar/staging/lib/*
+	@ echo "LD       $(INPUTS) => $@"
+	@ $(LD_HOST) $(INPUTS) -o $@ 
+
+$(addsuffix _target, $(PRODUCTS)): INPUTS = $(patsubst %.o,%_target.o,$(OBJECTS_$(patsubst %_target,%,$@))) $(OBJECTS_$@)
+$(addsuffix _target, $(PRODUCTS)): $$(INPUTS) $(MAKEFILE_LIST) oscar/staging/lib/*
+	@ echo "LD_BF    $(INPUTS) => $@"
+	@ $(LD_TARGET) $(INPUTS) -o $@
+
+.PHONY: clean
+clean:
+ifneq '$(CLEAN_FILES)' ''
+	@ echo "CLEAN   " $(CLEAN_FILES)
+	@ rm -f $(CLEAN_FILES)
+endif
+	@ set -e; for i in $(SUBDIRS); do echo "MAKE     $@ => $$i/"; $(MAKE) -C $$i $@; done
+
+ifeq '$(filter clean config, $(MAKECMDGOALS))' ''
+  -include Makefile.deps
+endif

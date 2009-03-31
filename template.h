@@ -23,7 +23,7 @@
 #define TEMPLATE_H_
 
 /*--------------------------- Includes -----------------------------*/
-#include "inc/oscar.h"
+#include "oscar/staging/inc/oscar.h"
 #include "debug.h"
 #include "template_ipc.h"
 #include <stdio.h>

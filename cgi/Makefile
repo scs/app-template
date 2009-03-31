@@ -1,66 +1,94 @@
-# The executable name is suffix depending on the target
-OUT = template.cgi
-HOST_SUFFIX = _host
-TARGET_SUFFIX = _target
+OBJECTS_cgi_template := cgi_template.o
+OBJECTS_cgi_template_host := oscar/staging/lib/libosc_host.a
+OBJECTS_cgi_template_target := oscar/staging/lib/libosc_target.a
 
-# Host-Compiler executables and flags
-HOST_CC = gcc 
-HOST_CFLAGS = $(HOST_FEATURES) -Wall -Wno-long-long -pedantic -DOSC_HOST -g
-HOST_LDFLAGS = -lm
+PRODUCTS := $(patsubst OBJECTS_%, %, $(filter OBJECTS_%, $(.VARIABLES)))
+PRODUCTS := $(filter-out $(addsuffix _host, $(PRODUCTS)) $(addsuffix _target, $(PRODUCTS)), $(PRODUCTS))
 
-# Cross-Compiler executables and flags
-TARGET_CC = bfin-uclinux-gcc 
-TARGET_CFLAGS = -Wall -Wno-long-long -pedantic -O2 -DOSC_TARGET
-TARGETDBG_CFLAGS = -Wall -Wno-long-long -pedantic -ggdb3 -DOSC_TARGET
-TARGET_LDFLAGS = -Wl,-elf2flt="-s 1048576"
+SUBDIRS := 
 
-# Source files of the application
-SOURCES = cgi_template.c
+CLEAN_FILES := *.o *.gdb $(PRODUCTS) $(addsuffix _host, $(PRODUCTS)) $(addsuffix _target, $(PRODUCTS)) Makefile.deps www.tar.gz www/cgi-bin/template.cgi
+CLEAN_FILES := $(wildcard $(CLEAN_FILES))
 
-# Files served by the web server
-WEB_FILES = www/*
+PEDANTIC := -Wall
+OPTIMIZE := -O3
 
-# Default target
-all: $(OUT)
+HOST_LIBS := -lm
+TARGET_LIBS := -lbfdsp -lm
 
-$(OUT): target host
+FLT_OPTS := -elf2flt="-s 10240"
 
-# Compiles the executable
-target: $(SOURCES) ../inc/*.h ../lib/libosc_target.a $(WEB_FILES)
-	@echo "Compiling for target.."
-	$(TARGET_CC) $(SOURCES) ../lib/libosc_target.a $(TARGET_CFLAGS) \
-	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
-	@echo "Target CGI done."
-#	cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT)
-	@mkdir -p www/cgi-bin
-	@cp $(OUT)$(TARGET_SUFFIX) www/cgi-bin/$(OUT)
-	@tar cfz www.tar.gz -C www .
-	@cp www.tar.gz /tftpboot
-	
-targetdbg: $(SOURCES) ../inc/*.h ../lib/libosc_target.a $(WEB_FILES)
-	@echo "Compiling for target.."
-	$(TARGET_CC) $(SOURCES) ../lib/libosc_target.a $(TARGETDBG_CFLAGS) \
-	$(TARGET_LDFLAGS) -o $(OUT)$(TARGET_SUFFIX)
-	@echo "Target CGI done."
-	cp $(OUT)$(TARGET_SUFFIX) /tftpboot/$(OUT)	
-	
-host: $(SOURCES) ../inc/*.h ../lib/libosc_host.a  $(WEB_FILES)
-	@echo "Compiling for host.."
-	$(HOST_CC) $(SOURCES) ../lib/libosc_host.a $(HOST_CFLAGS) \
-	$(HOST_LDFLAGS) -o $(OUT)$(HOST_SUFFIX)
-	@echo "Host executable done."
-	@cp $(OUT)$(HOST_SUFFIX) $(OUT)
-	@cp $(OUT) www/cgi-bin
-	cp www/cgi-bin/* /var/www/cgi-bin/
-	@chmod a+x /var/www/cgi-bin/$(OUT)
-	cp  www/* /var/www -r
-	
-# Cleanup
-clean:	
-	rm -f $(OUT)$(HOST_SUFFIX) $(OUT)$(TARGET_SUFFIX) $(OUT)
-	rm -f *.o *.cgi *.gdb
-	rm -f www/cgi-bin/$(OUT)
-	rm -f www.tar.gz
-	@ echo "Directory cleaned"
+CC_STD := -std=gnu99
 
-	
+CC_HOST := gcc -c -DOSC_HOST $(CC_STD) $(PEDANTIC) $(OPTIMIZE)
+LD_HOST := gcc -fPIC $(HOST_LIBS)
+
+CC_TARGET := bfin-uclinux-gcc -c -DOSC_TARGET $(CC_STD) $(PEDANTIC) $(OPTIMIZE)
+LD_TARGET := bfin-uclinux-gcc $(FLT_OPTS) $(TARGET_LIBS)
+
+SHELL := $(shell which bash)
+MAKE += --no-print-directory
+
+.PHONY: all host target
+all: host target
+
+.PHONY: install
+install: cgi_template_host host
+	@ echo "INSTALL  www => /var/www"
+	@ cp $< www/cgi-bin/template.cgi
+	@ cp -r www/* /var/www
+	@ set -e; for i in $(SUBDIRS); do echo "MAKE     $@ => $$i/"; $(MAKE) -C $$i $@; done
+
+www.tar.gz: cgi_template_target $(MAKEFILE_LIST) $(shell find www)
+	@ echo "TAR_GZ   www => www.tar.gz"
+	@ cp $< www/cgi-bin/template.cgi
+	@ tar c -C www . | gzip > www.tar.gz
+
+.PHONY: host
+host: $(addsuffix _host, $(PRODUCTS))
+	@ set -e; for i in $(SUBDIRS); do echo "MAKE     $@ => $$i/"; $(MAKE) -C $$i $@; done
+
+.PHONY: target
+target: $(addsuffix _target, $(PRODUCTS))
+	@ set -e; for i in $(SUBDIRS); do echo "MAKE     $@ => $$i/"; $(MAKE) -C $$i $@; done
+
+.SUFFIXES:
+Makefile.deps: $(SOURCES) $(MAKEFILE_LIST)
+	@ echo "DEPS     $?"
+	@ for i in $(SOURCES); do cpp -MM $$i; done > $@
+	@ echo "$@: $$(cut -d " " -f 2- < $@ | tr "\n" " ")" >> $@
+
+oscar/staging/inc/* oscar/staging/lib/*:
+	@ echo "MAKE     oscar"
+	@ $(MAKE) -C oscar
+
+%_host.o: %.c $(MAKEFILE_LIST) oscar/staging/inc/*
+	@ echo "GCC      $*.c => $@"
+	@ $(CC_HOST) -o $@ $*.c
+
+%_target.o: %.c $(MAKEFILE_LIST) oscar/staging/inc/*
+	@ echo "GCC_BF   $*.c => $@"
+	@ $(CC_TARGET) -o $@ $*.c
+
+.SECONDEXPANSION:
+$(addsuffix _host, $(PRODUCTS)): INPUTS = $(patsubst %.o,%_host.o,$(OBJECTS_$(patsubst %_host,%,$@))) $(OBJECTS_$@)
+$(addsuffix _host, $(PRODUCTS)): $$(INPUTS) $(MAKEFILE_LIST) oscar/staging/lib/*
+	@ echo "LD       $(INPUTS) => $@"
+	@ $(LD_HOST) $(INPUTS) -o $@ 
+
+$(addsuffix _target, $(PRODUCTS)): INPUTS = $(patsubst %.o,%_target.o,$(OBJECTS_$(patsubst %_target,%,$@))) $(OBJECTS_$@)
+$(addsuffix _target, $(PRODUCTS)): $$(INPUTS) $(MAKEFILE_LIST) oscar/staging/lib/*
+	@ echo "LD_BF    $(INPUTS) => $@"
+	@ $(LD_TARGET) $(INPUTS) -o $@
+
+.PHONY: clean
+clean:
+ifneq '$(CLEAN_FILES)' ''
+	@ echo "CLEAN   " $(CLEAN_FILES)
+	@ rm -f $(CLEAN_FILES)
+endif
+	@ set -e; for i in $(SUBDIRS); do echo "MAKE     $@ => $$i/"; $(MAKE) -C $$i $@; done
+
+ifeq '$(filter-out clean, $(MAKECMDGOALS))' '$(MAKECMDGOALS)'
+  -include Makefile.deps
+endif
