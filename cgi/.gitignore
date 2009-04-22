@@ -1,4 +1,2 @@
-template.cgi
-template.cgi_host
-template.cgi_target
-www.tar.gz
+/cgi_template_host
+/cgi_template_target
