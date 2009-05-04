@@ -26,7 +26,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include "oscar/staging/inc/oscar.h"
+#include "oscar.h"
 #include "cgi_template.h"
 
 #include <time.h>

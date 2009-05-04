@@ -43,7 +43,7 @@ const Msg mainStateMsg[] = {
  * @param pHsm Pointer to state machine
  * @param evt Event to be thrown.
  *//*********************************************************************/
-inline void ThrowEvent(struct MainState *pHsm, unsigned int evt)
+void ThrowEvent(struct MainState *pHsm, unsigned int evt)
 {
 	const Msg *pMsg = &mainStateMsg[evt];
 	HsmOnEvent((Hsm*)pHsm, pMsg);

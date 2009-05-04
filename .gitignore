@@ -1,17 +1,18 @@
-# Ignore working files
-/lcv_log
-/lcv_simlog
+# working files.
+/osc_log
+/osc_simlog
+/gpio_out.txt
+
+# generated files
+*.gdb
 /app-template_host
 /app-template_target
+/cgi/template.cgi_host
+/cgi/template.cgi_target
+/cgi/www/cgi-bin/template.cgi
+/cgi/www.tar.gz
 
-# Ignore generated binaries
-*.[oa]
-*.gdb
-
-# Ignore files used by the build system
-/doc
-/.metadata
-/.settings
-/.config
+# files used by the build system
+/build
 /oscar
-Makefile.deps
+/.config

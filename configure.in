@@ -1,0 +1,46 @@
+CONFIGS='PRIVATE_FRAMEWORK FRAMEWORK_PATH TARGET_IP ENABLE_DEBUG ENABLE_SIMULATION'
+
+CONFIG_PRIVATE_FRAMEWORK() {
+	enabled() { true; }
+	prompt() { echo 'Is the Oscar Framework already in the folder ./oscar? (y/n)'; }
+	default() { echo 'n'; }
+	check() { grep -xqE 'y|n'; }
+	
+	[ "$1" ] && "$1"
+}
+
+CONFIG_FRAMEWORK_PATH() {
+	enabled() { [ "$CONFIG_PRIVATE_FRAMEWORK" == 'n' ]; }
+	prompt() { echo 'Enter the path to the Oscar Framework.'; }
+	default() { echo '../oscar'; }
+	check() { grep -xqE '.+'; }
+	
+	[ "$1" ] && "$1"
+}
+
+CONFIG_TARGET_IP() {
+	enabled() { true; }
+	prompt() { echo "Enter the IP Address of the target device."; }
+	default() { echo '192.168.1.10'; }
+	check() { grep -xqE '[0-9a-zA-Z.:-]*'; }
+	
+	[ "$1" ] && "$1"
+}
+
+CONFIG_ENABLE_DEBUG() {
+	enabled() { true; }
+	prompt() { echo 'Do you want to enable debugging symbols? (y/n)'; }
+	default() { echo 'y'; }
+	check() { grep -xqE 'y|n'; }
+	
+	[ "$1" ] && "$1"
+}
+
+CONFIG_ENABLE_SIMULATION() {
+	enabled() { true; }
+	prompt() { echo 'Do you want to enable IO simulation on the target? (y/n)'; }
+	default() { echo 'n'; }
+	check() { grep -xqE 'y|n'; }
+	
+	[ "$1" ] && "$1"
+}
