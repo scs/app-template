@@ -82,7 +82,7 @@ install: cgi/template.cgi_host
 
 reconfigure:
 ifeq '$(CONFIG_PRIVATE_FRAMEWORK)' 'n'
-	@ ! [ -e "oscar" ] || [ -h "oscar" ] && ln -sf $(CONFIG_FRAMEWORK_PATH) oscar || echo "The symlink to the lgx module could not be created as the file ./lgx already exists and is something other than a symlink. Pleas remove it and run 'make reconfigure' to create the symlink."
+	@ ! [ -e "oscar" ] || [ -h "oscar" ] && ln -sfn $(CONFIG_FRAMEWORK_PATH) oscar || echo "The symlink to the lgx module could not be created as the file ./lgx already exists and is something other than a symlink. Pleas remove it and run 'make reconfigure' to create the symlink."
 endif
 	! [ -d "oscar" ] || $(MAKE) -C oscar config
 
