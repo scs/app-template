@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<title>leanXcam Template Web-Interface</title>
+		<link rel="stylesheet" href="css/styles.css" />
+		<style type="text/css"><![CDATA[
+		]]></style>
+		<script src="js/jquery.min.js"></script>
+		<script src="js/jquery.timers-1.1.2.js"></script>
+		<script src="js/functions.js"></script>
+		<script type="text/javascript"><![CDATA[
+			$(function () {
+				
+			})
+		]]></script>
+	</head>
+	<body>
+		<div id="lang-select">
+			<a href="javascript:setLanguage('de')" id="de">Deutsch</a>
+			<a href="javascript:setLanguage('en')" id="en">English</a>
+		</div>
+		<div class="big-box">
+			<h3>
+				<span lang="de">Livebild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild bild</span>
+				<span lang="en">Live Image</span>
+			</h3>
+			<img alt="live image" id="image" />
+		</div>
+		<div class="big-box">
+			<h3>Options</h3>
+			<input id="captureColor" name="captureColor" type="checkbox" checked="checked" />
+			<label for="captureColor">Debayer the image</label>
+		</div>
+	</body>
+</html>
