@@ -24,6 +24,7 @@
 #ifndef CGI_TEMPLATE_H_
 #define CGI_TEMPLATE_H_
 
+#include "oscar.h"
 #include "../template_ipc.h"
 
 /*! @brief The maximum length of the POST argument string supplied

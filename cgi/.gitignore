@@ -1,2 +1,5 @@
-/cgi_template_host
-/cgi_template_target
+# generated files
+/cgi/cgi_host
+/cgi/cgi_target
+/cgi/www/cgi-bin/cgi
+/cgi/www.tar.gz

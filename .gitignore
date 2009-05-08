@@ -5,12 +5,8 @@
 
 # generated files
 *.gdb
-/app-template_host
-/app-template_target
-/cgi/template.cgi_host
-/cgi/template.cgi_target
-/cgi/www/cgi-bin/template.cgi
-/cgi/www.tar.gz
+/template_host
+/template_target
 
 # files used by the build system
 /build

@@ -77,7 +77,7 @@ function updateData()
     if(elem("captureColor"))
         parameters = "DoCaptureColor=" + elem("captureColor").checked;
  
-    xmlHttp.open('POST', 'cgi-bin/template.cgi', true);
+    xmlHttp.open('POST', 'cgi-bin/cgi', true);
     xmlHttp.onreadystatechange = useHttpResponse;
     xmlHttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xmlHttp.setRequestHeader("Content-length", parameters.length);
