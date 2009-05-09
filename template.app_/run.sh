@@ -1,7 +1,7 @@
 #! /bin/msh
 
 # Go into the directory of the application.
-cd "`dirname "\`readlink -f \"$0\"\`"`" || exit $?
+cd "/mnt/app/template.app" || exit $?
 
 # Kill all stray process instances.
 echo "Killing other instances of the application ..."
