@@ -5,8 +5,9 @@
 
 # generated files
 *.gdb
-/template_host
-/template_target
+*_host
+*_target
+*.app
 
 # files used by the build system
 /build

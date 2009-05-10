@@ -120,6 +120,6 @@ function useHttpResponse()
 			
 			i++;
 		}
-		setTimeout("updateData()", 1);
+		setTimeout("updateData()", 1000);
 	}
 }

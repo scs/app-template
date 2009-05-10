@@ -119,7 +119,7 @@ $(APP_NAME).app: $(APP_NAME)_target cgi/cgi_target
 	rm -rf $@
 	cp -rL $@_ $@
 	cp -rL $< $@/app
-	tar c -C cgi/www . | gzip > $@/www.tar.gz
+	tar c -h -C cgi/www . | gzip > $@/www.tar.gz
 
 # Cleans the module.
 clean:
