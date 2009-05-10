@@ -28,8 +28,15 @@ ifeq '$(filter .config, $(MAKEFILE_LIST))' ''
 $(error Please configure the application using './configure' prior to compilation.)
 endif
 
-# Name for the application to produce
-APP_NAME := app-template
+# Name for the application to produce.
+APP_NAME := template
+
+# Binary executables to generate.
+PRODUCTS := $(APP_NAME) cgi/cgi
+
+# Listings of source files for the different executables.
+SOURCES_template := $(wildcard *.c)
+SOURCES_cgi/cgi := $(wildcard cgi/*.c)
 
 ifeq 'CONFIG_ENABLE_DEBUG' 'y'
 CC_host := gcc $(CFLAGS) -DOSC_HOST -O2
@@ -47,12 +54,6 @@ endif
 LD_host := gcc -fPIC $(HOST_LIBS)
 LD_target := bfin-uclinux-gcc -elf2flt="-s 1048576" $(TARGET_LIBS)
 
-# Listings of source files for the different applications.
-SOURCES_app-template := $(wildcard *.c)
-SOURCES_cgi/template.cgi := $(wildcard cgi/*.c)
-
-APPS := app-template cgi/template.cgi
-
 LIBS_host := oscar/library/libosc_host
 LIBS_target := oscar/library/libosc_target
 ifeq 'CONFIG_ENABLE_DEBUG' 'y'
@@ -67,24 +68,26 @@ LIBS_host := $(LIBS_host).a
 LIBS_target := $(LIBS_target).a
 
 .PHONY: all clean host target install deploy run reconfigure
-all: $(addsuffix _host, $(APPS)) $(addsuffix _target, $(APPS))
-host target: %: $(addsuffix _%, $(APPS))
+all: $(addsuffix _host, $(PRODUCTS)) $(addsuffix _target, $(PRODUCTS))
+host target: %: $(addsuffix _%, $(PRODUCTS))
 
-deploy: runapp.sh $(APP_NAME)_target cgi/www.tar.gz
-	scp -rp $^ root@$(CONFIG_TARGET_IP):/mnt/app || true
+deploy: $(APP_NAME).app
+#	echo \'\'
+	tar c $< | ssh root@$(CONFIG_TARGET_IP) 'rm -rf $< && tar x' || true
+#	scp -rp $^ root@$(CONFIG_TARGET_IP):/mnt/app || true
 
 run:
-	ssh root@$(CONFIG_TARGET_IP) /mnt/app/runapp.sh || true
+	ssh root@$(CONFIG_TARGET_IP) /mnt/app/$(APP_NAME).app/run.sh || true
 
-install: cgi/template.cgi_host
+install: cgi/cgi_host
 	cp -r cgi/www/* /var/www
-	cp $< /var/www/cgi-bin/template.cgi
+	cp $< /var/www/cgi-bin/cgi
 
 reconfigure:
 ifeq '$(CONFIG_PRIVATE_FRAMEWORK)' 'n'
 	@ ! [ -e "oscar" ] || [ -h "oscar" ] && ln -sfn $(CONFIG_FRAMEWORK_PATH) oscar || echo "The symlink to the lgx module could not be created as the file ./lgx already exists and is something other than a symlink. Pleas remove it and run 'make reconfigure' to create the symlink."
 endif
-	! [ -d "oscar" ] || $(MAKE) -C oscar config
+	@ ! [ -d "oscar" ] || $(MAKE) -C oscar config
 
 oscar/%:
 	$(MAKE) -C oscar $*
@@ -109,12 +112,15 @@ $(1)_host: $(patsubst %.c, build/%_host.o, $(SOURCES_$(1))) $(LIBS_host)
 $(1)_target: $(patsubst %.c, build/%_target.o, $(SOURCES_$(1))) $(LIBS_target)
 	$(LD_target) -o $$@ $$^
 endef
-$(foreach i, $(APPS), $(eval $(call LINK,$i)))
+$(foreach i, $(PRODUCTS), $(eval $(call LINK,$i)))
 
-cgi/www.tar.gz: cgi/template.cgi_target $(shell find cgi/www)
-	cp $< cgi/www/cgi-bin/template.cgi
-	tar c -C cgi/www . | gzip > $@
+.PHONY: $(APP_NAME).app
+$(APP_NAME).app: $(APP_NAME)_target cgi/cgi_target
+	rm -rf $@
+	cp -rL $@_ $@
+	cp -rL $< $@/app
+	tar c -h -C cgi/www . | gzip > $@/www.tar.gz
 
 # Cleans the module.
 clean:
-	rm -rf build $(APPS) cgi/www.tar.gz
+	rm -rf build $(APP_NAME).app $(PRODUCTS)

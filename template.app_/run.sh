@@ -1,14 +1,18 @@
 #! /bin/msh
 
+# Go into the directory of the application.
+cd "/mnt/app/template.app" || exit $?
+
 # Kill all stray process instances.
-killall app-template 2> /dev/null
+echo "Killing other instances of the application ..."
+killall app 2> /dev/null
 
 # Copy the web interface to the http server's root directory.
 echo "Setting up the web interface ..."
 rm -rf /home/httpd/*
-gzip -d < /mnt/app/www.tar.gz | tar -x -C /home/httpd/
+gzip -d < www.tar.gz | tar -x -C /home/httpd/
 
 # Run the application
 echo "Running the application..."
-/mnt/app/app-template_target
+./app
 echo "The application quit with an exit status of $?."
