@@ -96,11 +96,11 @@ oscar/%:
 build/%_host.o: %.c $(filter-out %.d, $(MAKEFILE_LIST))
 	@ mkdir -p $(dir $@)
 	$(CC_host) -MD $< -o $@
-	@ grep -oE '[^ \\]+' < $(@:.o=.d) | sed -r '/:$$/d; s/^.*$$/$(subst /, \/, $@): \0\n\0:/' > $(@:.o=.d~) && mv -f $(@:.o=.d){~,}
+	grep -oE '[^ \\]+' < $(@:.o=.d) | sed -r '/:$$/d; s|^.*$$|$@: \0\n\0:|' > $(@:.o=.d~) && mv -f $(@:.o=.d){~,}
 build/%_target.o: %.c $(filter-out %.d, $(MAKEFILE_LIST))
 	@ mkdir -p $(dir $@)
 	$(CC_target) -MD $< -o $@
-	@ grep -oE '[^ \\]+' < $(@:.o=.d) | sed -r '/:$$/d; s/^.*$$/$(subst /, \/, $@): \0\n\0:/' > $(@:.o=.d~) && mv -f $(@:.o=.d){~,}
+	grep -oE '[^ \\]+' < $(@:.o=.d) | sed -r '/:$$/d; s|^.*$$|$@: \0\n\0:|' > $(@:.o=.d~) && mv -f $(@:.o=.d){~,}
 
 # Link targets.
 define LINK
