@@ -107,7 +107,7 @@ define LINK
 $(1)_host: $(patsubst %.c, build/%_host.o, $(SOURCES_$(1))) $(LIBS_host)
 	$(LD_host) -o $$@ $$^
 $(1)_target: $(patsubst %.c, build/%_target.o, $(SOURCES_$(1))) $(LIBS_target)
-	$(LD_target) -o $$@ $$^
+	$(LD_target) -o $$@ $$^ -lm -lbfdsp
 endef
 $(foreach i, $(APPS), $(eval $(call LINK,$i)))
 
