@@ -44,14 +44,14 @@ CC_host += -DOSC_TARGET
 CC_target += -DOSC_TARGET
 endif
 
-LD_host := gcc -fPIC $(HOST_LIBS)
-LD_target := bfin-uclinux-gcc -elf2flt="-s 1048576" $(TARGET_LIBS)
+LD_host := gcc -fPIC
+LD_target := bfin-uclinux-gcc -elf2flt="-s 1048576"
 
 # Listings of source files for the different applications.
-SOURCES_app-template := $(wildcard *.c)
+SOURCES_$(APP_NAME) := $(wildcard *.c)
 SOURCES_cgi/template.cgi := $(wildcard cgi/*.c)
 
-APPS := app-template cgi/template.cgi
+APPS := $(patsubst SOURCES_%, %, $(filter SOURCES_%, $(.VARIABLES)))
 
 LIBS_host := oscar/library/libosc_host
 LIBS_target := oscar/library/libosc_target
