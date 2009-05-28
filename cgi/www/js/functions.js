@@ -1,4 +1,4 @@
-function getSearchArguments() {
+function getSearchArgs() {
 	var parts = document.location.search.slice(1).split("&");
 	var result = { };
 	
@@ -13,7 +13,6 @@ function getSearchArguments() {
 	
 	return result;
 };
-
 
 function setLanguage(lang) {
 	$("*[lang]").hide();
