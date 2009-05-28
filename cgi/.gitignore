@@ -1,5 +1,5 @@
 # generated files
-/cgi/cgi_host
-/cgi/cgi_target
-/cgi/www/cgi-bin/cgi
-/cgi/www.tar.gz
+/cgi_host
+/cgi_target
+/www/cgi-bin/cgi
+/www.tar.gz
