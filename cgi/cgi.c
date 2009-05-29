@@ -73,7 +73,7 @@ static OSC_ERR CGIParseArguments(const char *strSrc, const int32 srcLen)
 	
 	for (; (uint32)strSrc < (uint32)strSrcLast; strSrc++)
 	{
-		if (unlikely(*strSrc == '='))
+		if (*strSrc == '=')
 		{
 			/* Argument name parsed, find out which argument and continue
 			 * to parse its value. */
@@ -91,17 +91,17 @@ static OSC_ERR CGIParseArguments(const char *strSrc, const int32 srcLen)
 						
 			strTemp = cgi.strArgumentsTemp;
 			
-			if (unlikely(pArg == NULL))
+			if (pArg == NULL)
 			{
 				OscLog(ERROR, "%s: Unknown argument encountered: \"%s\"\n", __func__, cgi.strArgumentsTemp);
 				return -EINVALID_PARAMETER;
 			}
 		}
-		else if (unlikely(*strSrc == '&' || *strSrc == '\0'))
+		else if (*strSrc == '&' || *strSrc == '\0')
 		{
 			/* Argument value parsed, convert and read next argument. */
 			*strTemp = '\0';
-			if (unlikely(pArg == NULL))
+			if (pArg == NULL)
 			{
 				OscLog(ERROR, "%s: Value without type found: \"%s\"\n", __func__, strTemp);
 				return -EINVALID_PARAMETER;
@@ -148,12 +148,12 @@ static OSC_ERR CGIParseArguments(const char *strSrc, const int32 srcLen)
 			}
 			
 		}
-		else if (unlikely(*strSrc == '+'))
+		else if (*strSrc == '+')
 		{
 			/* Spaces are encoded as + */
 			*strTemp++ = ' ';
 		}
-		else if (unlikely(*strSrc == '%'))
+		else if (*strSrc == '%')
 		{
 			/* ASCII Hex codes */
 			if (sscanf(strSrc+1, "%2x", &code) != 1)
@@ -385,7 +385,7 @@ int main()
 			err = QueryApp();
 		} while (err == -ENEGATIVE_ACKNOWLEDGE);
 		
-		if (unlikely(err != SUCCESS))
+		if (err != SUCCESS)
 		{
 			OscLog(ERROR, "CGI: Error querying algorithm!\n");
 			goto exit_unload;
