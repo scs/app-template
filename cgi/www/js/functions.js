@@ -1,3 +1,16 @@
+Array.prototype.joinLines = function () {
+	return this.join("\n") + "\n";
+}
+
+String.prototype.splitLines = function () {
+	var list = this.split("\n");
+	
+	if (list.length > 0 && !list[list.length - 1])
+		list.pop();
+	
+	return list;
+}
+
 function getSearchArgs() {
 	var parts = document.location.search.slice(1).split("&");
 	var result = { };
@@ -104,13 +117,13 @@ function serializeValues(data) {
 		list.push(key + ": " + this);
 	})
 	
-	return list.join("\n");
+	return list.joinLines();
 }
 
 function parseValues(data) {
 	var obj = { };
 	
-	$.each(data.split("\n"), function () {
+	$.each(data.splitLines("\n"), function () {
 		var pos = this.indexOf(":");
 		
 		obj[$.trim(this.slice(0, pos))] = $.trim(this.slice(pos + 1));
@@ -131,8 +144,7 @@ function exchangeState(data, success, failure) {
 		},
 		timeout: 5000,
 		type: "POST",
-	//	url: "/cgi-bin/cgi"
-		url: "http://localhost/~michi/cgi-bin/cat"
+		url: "/cgi-bin/cgi"
 	});
 }
 
