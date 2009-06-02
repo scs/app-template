@@ -51,8 +51,14 @@ CC_host += -DOSC_TARGET
 CC_target += -DOSC_TARGET
 endif
 
-LD_host := gcc -fPIC $(HOST_LIBS)
-LD_target := bfin-uclinux-gcc -elf2flt="-s 1048576" $(TARGET_LIBS)
+LD_host := gcc -fPIC
+LD_target := bfin-uclinux-gcc -elf2flt="-s 1048576"
+
+# Listings of source files for the different applications.
+SOURCES_$(APP_NAME) := $(wildcard *.c)
+SOURCES_cgi/template.cgi := $(wildcard cgi/*.c)
+
+APPS := $(patsubst SOURCES_%, %, $(filter SOURCES_%, $(.VARIABLES)))
 
 LIBS_host := oscar/library/libosc_host
 LIBS_target := oscar/library/libosc_target
@@ -97,18 +103,18 @@ oscar/%:
 build/%_host.o: %.c $(filter-out %.d, $(MAKEFILE_LIST))
 	@ mkdir -p $(dir $@)
 	$(CC_host) -MD $< -o $@
-	@ grep -oE '[^ \\]+' < $(@:.o=.d) | sed -r '/:$$/d; s/^.*$$/$(subst /, \/, $@): \0\n\0:/' > $(@:.o=.d~) && mv -f $(@:.o=.d){~,}
+	@ grep -oE '[^ \\]+' < $(@:.o=.d) | sed -r '/:$$/d; s|^.*$$|$@: \0\n\0:|' > $(@:.o=.d~) && mv -f $(@:.o=.d){~,}
 build/%_target.o: %.c $(filter-out %.d, $(MAKEFILE_LIST))
 	@ mkdir -p $(dir $@)
 	$(CC_target) -MD $< -o $@
-	@ grep -oE '[^ \\]+' < $(@:.o=.d) | sed -r '/:$$/d; s/^.*$$/$(subst /, \/, $@): \0\n\0:/' > $(@:.o=.d~) && mv -f $(@:.o=.d){~,}
+	@ grep -oE '[^ \\]+' < $(@:.o=.d) | sed -r '/:$$/d; s|^.*$$|$@: \0\n\0:|' > $(@:.o=.d~) && mv -f $(@:.o=.d){~,}
 
 # Link targets.
 define LINK
 $(1)_host: $(patsubst %.c, build/%_host.o, $(SOURCES_$(1))) $(LIBS_host)
 	$(LD_host) -o $$@ $$^
 $(1)_target: $(patsubst %.c, build/%_target.o, $(SOURCES_$(1))) $(LIBS_target)
-	$(LD_target) -o $$@ $$^
+	$(LD_target) -o $$@ $$^ -lm -lbfdsp
 endef
 $(foreach i, $(PRODUCTS), $(eval $(call LINK,$i)))
 
