@@ -17,10 +17,28 @@
 				setLanguage(getSearchArgs().lang || "de");
 				// Decompile input tags with content to an input and a sepparate label tag.
 				buildControls();
+				// Call the function that updates in- and output and eventually calls itself.
+				updateCycle();
 			})
 		]]></script>
 	</head>
 	<body>
+		<div id="off">
+			<div>
+				<span class="row"><img src="images/error.png" style="width: 64px" /></span>
+				<span class="row" style="font-size: 18px;">
+					<span lang="de">Applikation ist deaktiviert.</span>
+					<span lang="en">Application is offline.</span>
+				</span>
+				<span class="row">
+					<div><div class="wheel" /></div>
+					<div style="font-size: 14px; font-weight: bold;">
+						<span lang="de">Versuche mit der Applikation zu verbinden …</span>
+						<span lang="en">Trying to connect to the application …</span>
+					</div>
+				</span>
+			</div>
+		</div>
 		<div id="lang-select">
 			<a href="javascript:setLanguage('de')" id="de">Deutsch</a>
 			<a href="javascript:setLanguage('en')" id="en">English</a>
@@ -30,9 +48,9 @@
 				<span lang="de">Livebild</span>
 				<span lang="en">Live Image</span>
 			</h3>
-			<img alt="live image" id="image" />
+			<div id="image" />
 		</div>
-		<div class="big-box">
+		<div class="big-box" id="options-box">
 			<h3>
 				<span lang="de">Optionen</span>
 				<span lang="en">Options</span>
@@ -41,28 +59,6 @@
 				<span lang="de">Bild debayern</span>
 				<span lang="en">Debayer the image</span>
 			</input>
-		</div>
-		<div class="big-box">
-			<h3>Tests</h3>
-			<p>
-				Boolean:
-				<input name="boolean" type="checkbox" />
-			</p>
-			<p>
-				Bitfield:
-				<input name="bitfield" type="checkbox" value="foo">foo</input>
-				<input name="bitfield" type="checkbox" value="bar">bar</input>
-			</p>
-			<p>
-				Enumeration:
-				<input name="enumeration" type="radio" value="foo">foo</input>
-				<input name="enumeration" type="radio" value="bar">bar</input>
-			</p>
-			<p>
-				Text:
-				<input name="text" type="text" size="30" maxlength="30" />
-			</p>
-			fnord
 		</div>
 	</body>
 </html>

@@ -1,5 +1,10 @@
 Array.prototype.joinLines = function () {
-	return this.join("\n") + "\n";
+	var res = this.join("\n")
+	
+	if (res)
+		res += "\n";
+	
+	return res;
 }
 
 String.prototype.splitLines = function () {
@@ -60,6 +65,7 @@ function buildControls() {
 	})
 }
 
+// Removes duplicate elements from an array.
 function removeDuplicates(arr) {
 	var newArr = [];
 	var arr = $.makeArray(arr);
@@ -75,7 +81,7 @@ function removeDuplicates(arr) {
 	return newArr;
 }
 
-/* getInputNames: Get a list of names of all input elements in the given context. context is optional and defaults to the document. */
+// getInputNames: Get a list of names of all input elements in the given context. context is optional and defaults to the document.
 function getInputNames(context) {
 	var foo = $("input", context);
 	
@@ -132,26 +138,121 @@ function parseValues(data) {
 	return obj;
 }
 
-function exchangeState(data, success, failure) {
+function exchangeState(data, onLoad, onError) {
+	console.log(data);
+	
 	$.ajax({
 		async: true,
 		cache: false,
 		contentType: "text/plain",
 		data: serializeValues(data),
-		error: failure,
+		error: onError,
 		success: function (data) {
-			success(parseValues(data));
+			onLoad(parseValues(data));
 		},
-		timeout: 5000,
+		timeout: 2000,
 		type: "POST",
 		url: "/cgi-bin/cgi"
 	});
 }
 
-function loadImage(url) {
-	var img = new Image();
+function asynLoadImage(url, onLoad, onError) {
+	var img = $(new Image());
 	
-	img.src = url + "?dummy=" + (new Date()).getTime();
+	img.load(onLoad);
+	img.error(onError);
+	img.attr("src", url /*+ "?dummy=" + (new Date()).getTime()*/);
+}
+
+var offBanner = {
+	active: false,
+	show: function () {
+		var wheelPos = 0;
+		
+		if (this.active)
+			return;
+		
+		this.active = true;
+		$("#off").stop(true, true).fadeIn("fast");
+		
+		$("#off .wheel").everyTime("100ms", function () {
+			wheelPos = (wheelPos + 1) % 12;
+			$(this).css("background-position", -wheelPos * 32 + "px");
+		});
+	},
+	hide: function () {
+		if (!this.active)
+			return;
+		
+		this.active = false;
+		$("#off").stop(true, true).fadeOut("fast", function () {
+			$(".wheel", this).stopTime();
+		});
+	}
+}
+
+var stateControl = {
+	currentState: "online",
+	pulledState: "",
+	pullState: function (state) {
+		var that = this;
+		
+		console.log("pullState: " + state);
+		
+		if (state != this.pulledState) {
+			$(document).stopTime("stateControl");
+			this.pulledState = state;
+		}
+		
+		if (state != this.currentState) {
+			$(document).oneTime("2s", "stateControl", function () {
+				that.changeState(state);
+			});
+		}
+	},
+	changeState: function (state) {
+		var states = {
+			offline: function () {
+				offBanner.show();
+			},
+			online: function () {
+				offBanner.hide();
+			}
+		};
+		
+		this.currentState = state;
+		states[state]();
+	}
+}
+
+var updateCycle = function () {
+	function offline() {
+		stateControl.pullState("offline");
+		
+		$(document).oneTime("5s", function () {
+			exchangeState({ }, online, offline);
+		});
+	}
 	
-	return img;
-};
+	function online() {
+		stateControl.pullState("online");
+		
+		exchangeState(getInputValues($("#options-box")), function (data) {
+			asynLoadImage("image.bmp?" + data.imgTS, function () {
+				$(this).attr("id", "image");
+				$("#image").replaceWith(this);
+				
+				// Close the loop.
+				online();
+			}, function (event) {
+				console.log(event);
+				offline();
+			});
+		}, function (request, status) {
+			console.log(status);
+			offline();
+		});
+	}
+	
+	online();
+}

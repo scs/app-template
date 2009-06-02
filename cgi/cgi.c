@@ -41,6 +41,21 @@ struct ARGUMENT args[] =
 	{ "DoCaptureColor", BOOL_ARG, &cgi.args.bDoCaptureColor, &cgi.args.bDoCaptureColor_supplied }
 };
 
+/*! @brief Strips whiltespace from the beginning and the end of a string and returns the new beginning of the string. Be advised, that the original string gets mangled! */
+char * strtrim(char * str) {
+	char * end = strchr(str, 0) - 1;
+	
+	while (*str != 0 && strchr(" \t\n", *str) != NULL)
+		str += 1;
+	
+	while (end > str && strchr(" \t\n", *end) != NULL)
+		end -= 1;
+	
+	*(end + 1) = 0;
+	
+	return str;
+}
+
 /*********************************************************************//*!
  * @brief Split the supplied URI string into arguments and parse them.
  * 
@@ -52,124 +67,69 @@ struct ARGUMENT args[] =
  * @param srcLen The length of the argument string.
  * @return SUCCESS or an appropriate error code otherwise
  *//*********************************************************************/
-static OSC_ERR CGIParseArguments(const char *strSrc, const int32 srcLen)
+static OSC_ERR CGIParseArguments()
 {
-	unsigned int code, i;
-	const char *strSrcLast = &strSrc[srcLen];
-	char *strTemp = cgi.strArgumentsTemp;
-	struct ARGUMENT *pArg = NULL;
-	
-	if (srcLen == 0 || *strSrc == '\0')
-	{
-		/* Empty string supplied. */
-		return SUCCESS;
-	}
+	char buffer[1024];
 	
 	/* Intialize all arguments as 'not supplied' */
-	for (i = 0; i < sizeof(args)/sizeof(struct ARGUMENT); i++)
-	{
-		*args[i].pbSupplied = FALSE;
-	}
+	for (int i = 0; i < sizeof args / sizeof (struct ARGUMENT); i += 1)
+		*args[i].pbSupplied = false;
 	
-	for (; (uint32)strSrc < (uint32)strSrcLast; strSrc++)
-	{
-		if (*strSrc == '=')
-		{
-			/* Argument name parsed, find out which argument and continue
-			 * to parse its value. */
-			*strTemp = '\0';
-			pArg = NULL;
-			for (i = 0; i < sizeof(args)/sizeof(struct ARGUMENT); i++)
-			{
-				if (strcmp(args[i].strName, cgi.strArgumentsTemp) == 0)
-				{
-					/* Found it. */
-					pArg = &args[i];
-					break;
-				}
-			}
-						
-			strTemp = cgi.strArgumentsTemp;
-			
-			if (pArg == NULL)
-			{
-				OscLog(ERROR, "%s: Unknown argument encountered: \"%s\"\n", __func__, cgi.strArgumentsTemp);
-				return -EINVALID_PARAMETER;
+	while (fgets (buffer, sizeof buffer, stdin)) {
+		struct ARGUMENT *pArg = NULL;
+		char * key, * value = strchr(buffer, ':');
+		
+		if (value == NULL) {
+			OscLog(ERROR, "%s: Invalid line: \"%s\"\n", __func__, buffer);
+			return -EINVALID_PARAMETER;
+		}
+
+		*value = 0;
+		value += 1;
+		
+		key = strtrim(buffer);
+		value = strtrim(value);
+				
+		for (int i = 0; i < sizeof(args)/sizeof(struct ARGUMENT); i += 1) {
+			if (strcmp(args[i].strName, key) == 0) {
+				pArg = args + i;
+				break;
 			}
 		}
-		else if (*strSrc == '&' || *strSrc == '\0')
-		{
-			/* Argument value parsed, convert and read next argument. */
-			*strTemp = '\0';
-			if (pArg == NULL)
-			{
-				OscLog(ERROR, "%s: Value without type found: \"%s\"\n", __func__, strTemp);
-				return -EINVALID_PARAMETER;
-			}
-			
-			strTemp = cgi.strArgumentsTemp;
-			
-			switch (pArg->enType)
-			{
-			case STRING_ARG:
-				strcpy((char*)pArg->pData, strTemp);
-				break;
-			case INT_ARG:
-				if (sscanf(strTemp, "%d", (int*)pArg->pData) != 1)
-				{
-					OscLog(ERROR, "%s: Unable to parse int value of variable \"%s\" (%s)!\n", __func__, pArg->strName, strTemp);
+		
+		if (pArg == NULL) {
+			OscLog(ERROR, "%s: Unknown argument encountered: \"%s\"\n", __func__, key);
+			return -EINVALID_PARAMETER;
+		} else {
+			if (pArg->enType == STRING_ARG) {
+				// FIXME: Could someone fix this buffer overflow?
+				strcpy((char *) pArg->pData, value);
+			} else if (pArg->enType == INT_ARG) {
+				if (sscanf(value, "%d", (int *) pArg->pData) != 1) {
+					OscLog(ERROR, "%s: Unable to parse int value of variable \"%s\" (%s)!\n", __func__, pArg->strName, value);
 					return -EINVALID_PARAMETER;
 				}
-				break;
-			case SHORT_ARG:
-				if (sscanf(strTemp, "%hd", (short*)pArg->pData) != 1)
-				{
-					OscLog(ERROR, "%s: Unable to parse short value of variable \"%s\" (%s)!\n", __func__, pArg->strName, strTemp);
+			} else if (pArg->enType == SHORT_ARG) {
+				if (sscanf(value, "%hd", (short *) pArg->pData) != 1) {
+					OscLog(ERROR, "%s: Unable to parse short value of variable \"%s\" (%s)!\n", __func__, pArg->strName, value);
 					return -EINVALID_PARAMETER;
 				}
-				break;
-			case BOOL_ARG:
-				if (strcmp(strTemp, "true") == 0)
-				{
-					*((bool*)pArg->pData) = TRUE;
-				}
-				else if (strcmp(strTemp, "false") == 0)
-				{
-					*((bool*)pArg->pData) = FALSE;
+			} else if (pArg->enType == BOOL_ARG) {
+				if (strcmp(value, "true") == 0) {
+					*((bool *) pArg->pData) = true;
+				} else if (strcmp(value, "false") == 0) {
+					*((bool *) pArg->pData) = false;
 				} else {
-					OscLog(ERROR, "CGI %s: Unable to parse boolean value of variable \"%s\" (%s)!\n", __func__, pArg->strName, strTemp);
+					OscLog(ERROR, "CGI %s: Unable to parse boolean value of variable \"%s\" (%s)!\n", __func__, pArg->strName, value);
 					return -EINVALID_PARAMETER;
 				}
-				break;
-			}
-			if (pArg->pbSupplied != NULL)
-			{
-				*pArg->pbSupplied = TRUE;
 			}
 			
-		}
-		else if (*strSrc == '+')
-		{
-			/* Spaces are encoded as + */
-			*strTemp++ = ' ';
-		}
-		else if (*strSrc == '%')
-		{
-			/* ASCII Hex codes */
-			if (sscanf(strSrc+1, "%2x", &code) != 1)
-			{
-				/* Unknown code */
-				code = '?';
-			}
-			*strTemp++ = code;
-			strSrc +=2;
-		}
-		else
-		{
-			*strTemp++ = *strSrc;
+			if (pArg->pbSupplied != NULL)
+				*pArg->pbSupplied = true;
 		}
 	}
-	
+		
 	return SUCCESS;
 }
 
@@ -286,9 +246,9 @@ static void FormCGIResponse()
 	struct APPLICATION_STATE  *pAppState = &cgi.appState;
 	
 	/* Header */
-	printf("Content-type: text/html\n\n" );
+	printf("Content-type: text/plain\n\n" );
 	
-	printf("imgTS=%u\n", (unsigned int)pAppState->imageTimeStamp);
+	printf("imgTS: %u\n", (unsigned int)pAppState->imageTimeStamp);
 	
 	fflush(stdout);
 }
@@ -355,23 +315,10 @@ int main()
 		return -1;
 	}
 	
-	strContentLen = getenv("CONTENT_LENGTH");
-	
-	if((strContentLen == NULL) ||
-		(sscanf(strContentLen,"%d",&contentLen) != 1) ||
-		contentLen >= MAX_ARGUMENT_STRING_LEN)
-	{
+	err = CGIParseArguments();
+	if(err != SUCCESS) {
+		OscLog(ERROR, "CGI: Error parsing command line arguments! \"%s\"\n", cgi.strArgumentsRaw);
 		goto exit_unload;
-	} else {
-		/* Get the argument string. */
-		fgets(cgi.strArgumentsRaw, contentLen + 1, stdin);
-		
-		err = CGIParseArguments(cgi.strArgumentsRaw, contentLen + 1);
-		if(err != SUCCESS)
-		{
-			OscLog(ERROR, "CGI: Error parsing command line arguments! \"%s\"\n", cgi.strArgumentsRaw);
-			goto exit_unload;
-		}
 	}
 	
 	/* The algorithm negative acknowledges if it cannot supply

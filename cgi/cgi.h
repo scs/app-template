@@ -35,7 +35,7 @@
 #define MAX_ARG_NAME_LEN 32
 
 /*! @brief The file name of the live image. */
-#define IMG_FN "../img.bmp"
+#define IMG_FN "../image.bmp"
 
 /* @brief The different data types of the argument string. */
 enum EnArgumentType
