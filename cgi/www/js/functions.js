@@ -139,8 +139,6 @@ function parseValues(data) {
 }
 
 function exchangeState(data, onLoad, onError) {
-	console.log(data);
-	
 	$.ajax({
 		async: true,
 		cache: false,
@@ -197,8 +195,6 @@ var stateControl = {
 	pullState: function (state) {
 		var that = this;
 		
-		console.log("pullState: " + state);
-		
 		if (state != this.pulledState) {
 			$(document).stopTime("stateControl");
 			this.pulledState = state;
@@ -245,11 +241,11 @@ function updateCycle() {
 				// Close the loop.
 				online();
 			}, function (event) {
-				console.log(event);
+			//	console.log(event);
 				offline();
 			});
 		}, function (request, status) {
-			console.log(status);
+		//	console.log(status);
 			offline();
 		});
 	}
