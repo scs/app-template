@@ -276,20 +276,20 @@ int main()
 		/* Socket does not exist => Algorithm is off. */
 		/* Form a short reply with that info and shut down. */
 		cgi.appState.enAppMode = APP_OFF;
-		return -1;
+		return 1;
 	}
 	
 	err = OscCreate(&cgi.hFramework);
 	if(err != SUCCESS)
 	{
-		return -1;
+		return 1;
 	}
 	
 	err = OscLogCreate(cgi.hFramework);
 	if(err != SUCCESS)
 	{
 		OscDestroy(cgi.hFramework);
-		return -1;
+		return 1;
 	}
 	OscLogSetConsoleLogLevel(CRITICAL);
 	OscLogSetFileLogLevel(DEBUG);
@@ -300,7 +300,7 @@ int main()
 		OscLog(ERROR, "CGI: Unable to create IPC module (%d)!\n", err);
 		OscLogDestroy(cgi.hFramework);
 		OscDestroy(cgi.hFramework);
-		return -1;
+		return 1;
 	}
 
 	err = OscIpcRegisterChannel(&cgi.ipcChan, USER_INTERFACE_SOCKET_PATH, 0);
@@ -310,7 +310,7 @@ int main()
 		OscIpcDestroy(cgi.hFramework);
 		OscLogDestroy(cgi.hFramework);
 		OscDestroy(cgi.hFramework);
-		return -1;
+		return 1;
 	}
 	
 	err = CGIParseArguments();
