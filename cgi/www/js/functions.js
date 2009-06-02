@@ -225,11 +225,11 @@ var stateControl = {
 	}
 }
 
-var updateCycle = function () {
+function updateCycle() {
 	function offline() {
 		stateControl.pullState("offline");
 		
-		$(document).oneTime("5s", function () {
+		$(document).oneTime("0.5s", function () {
 			exchangeState({ }, online, offline);
 		});
 	}
