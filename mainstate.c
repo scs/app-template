@@ -116,7 +116,7 @@ Msg const *MainState_top(MainState *me, Msg *msg)
 	switch (msg->evt)
 	{
 	case START_EVT:
-		STATE_START(me, &me->captureColor);
+		STATE_START(me, &me->captureRaw);
 		return 0;
 	case IPC_GET_COLOR_IMG_EVT:
 	case IPC_GET_RAW_IMG_EVT:
