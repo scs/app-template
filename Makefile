@@ -72,9 +72,7 @@ all: $(addsuffix _host, $(PRODUCTS)) $(addsuffix _target, $(PRODUCTS))
 host target: %: $(addsuffix _%, $(PRODUCTS))
 
 deploy: $(APP_NAME).app
-#	echo \'\'
 	tar c $< | ssh root@$(CONFIG_TARGET_IP) 'rm -rf $< && tar x' || true
-#	scp -rp $^ root@$(CONFIG_TARGET_IP):/mnt/app || true
 
 run:
 	ssh root@$(CONFIG_TARGET_IP) /mnt/app/$(APP_NAME).app/run.sh || true
