@@ -149,14 +149,13 @@ static OSC_ERR QueryApp()
 	
 	/* First, get the current state of the algorithm. */
 	err = OscIpcGetParam(cgi.ipcChan, &cgi.appState, GET_APP_STATE, sizeof(struct APPLICATION_STATE));
-	
 	if (err != SUCCESS)
 	{
 		/* This request is defined in all states, and thus must succeed. */
 		OscLog(ERROR, "CGI: Error querying application! (%d)\n", err);
 		return err;
 	}
-	
+		
 	switch(cgi.appState.enAppMode)
 	{
 	case APP_OFF:
@@ -277,8 +276,7 @@ int main()
 		/* Socket does not exist => Algorithm is off. */
 		/* Form a short reply with that info and shut down. */
 		cgi.appState.enAppMode = APP_OFF;
-		FormCGIResponse();
-		return 0;
+		return -1;
 	}
 	
 	err = OscCreate(&cgi.hFramework);
