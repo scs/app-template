@@ -124,7 +124,7 @@ $(foreach i, $(PRODUCTS), $(eval $(call LINK,$i)))
 $(APP_NAME).app: $(addsuffix _target, $(PRODUCTS))
 	rm -rf $@
 	cp -rL app $@
-	tar c -C cgi/www . | gzip > $@/www.tar.gz
+	tar c -h -C cgi/www . | gzip > $@/www.tar.gz
 
 # Cleans the module.
 clean:
