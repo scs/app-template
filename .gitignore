@@ -6,10 +6,9 @@
 
 # generated files
 *.gdb
-/app_host
-/app_target
-/cgi/cgi_host
-/cgi/cgi_target
+*_host
+*_target
+*.app
 
 # files used by the build system
 /build
