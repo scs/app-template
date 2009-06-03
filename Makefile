@@ -32,10 +32,10 @@ endif
 APP_NAME := template
 
 # Binary executables to generate.
-PRODUCTS := $(APP_NAME) cgi/cgi
+PRODUCTS := app cgi/cgi
 
 # Listings of source files for the different executables.
-SOURCES_template := $(wildcard *.c)
+SOURCES_app := $(wildcard *.c)
 SOURCES_cgi/cgi := $(wildcard cgi/*.c)
 
 ifeq 'CONFIG_ENABLE_DEBUG' 'y'
@@ -67,8 +67,10 @@ endif
 LIBS_host := $(LIBS_host).a
 LIBS_target := $(LIBS_target).a
 
+BINARIES := $(addsuffix _host, $(PRODUCTS)) $(addsuffix _target, $(PRODUCTS))
+
 .PHONY: all clean host target install deploy run reconfigure
-all: $(addsuffix _host, $(PRODUCTS)) $(addsuffix _target, $(PRODUCTS))
+all: $(BINARIES)
 host target: %: $(addsuffix _%, $(PRODUCTS))
 
 deploy: $(APP_NAME).app
@@ -113,12 +115,11 @@ endef
 $(foreach i, $(PRODUCTS), $(eval $(call LINK,$i)))
 
 .PHONY: $(APP_NAME).app
-$(APP_NAME).app: $(APP_NAME)_target cgi/cgi_target
+$(APP_NAME).app: $(addsuffix _target, $(PRODUCTS))
 	rm -rf $@
-	cp -rL $@_ $@
-	cp -rL $< $@/app
-	tar c -h -C cgi/www . | gzip > $@/www.tar.gz
+	cp -rL app $@
+	tar c -C cgi/www . | gzip > $@/www.tar.gz
 
 # Cleans the module.
 clean:
-	rm -rf build $(APP_NAME).app $(PRODUCTS)
+	rm -rf build *.gdb $(BINARIES) $(APP_NAME).app

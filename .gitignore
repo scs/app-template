@@ -2,6 +2,7 @@
 /osc_log
 /osc_simlog
 /gpio_out.txt
+*~
 
 # generated files
 *.gdb
