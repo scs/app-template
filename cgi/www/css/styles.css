@@ -1,5 +1,5 @@
 body {
-	font-family: Lucida Sans, Helvetica, Sans;
+	font-family: Trebuchet MS, Helvetica, Sans;
 	font-size: 14px;
 	margin: 0px;
 }
@@ -44,6 +44,15 @@ h3 {
 	width: 32px;
 	height: 32px;
 	background-image: url("../imgs/wheel.png");
+}
+
+#off .title {
+	font-size: 18px;
+	font-weight: bold;
+}
+
+#off .message {
+	font-size: 14px;
 }
 
 #off > * {
