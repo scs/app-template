@@ -86,8 +86,9 @@ run:
 	ssh root@$(CONFIG_TARGET_IP) /mnt/app/$(APP_NAME).app/run.sh || true
 
 install: cgi/cgi_host
-	cp -r cgi/www/* /var/www
+	cp -RL cgi/www/* /var/www
 	cp $< /var/www/cgi-bin/cgi
+	chmod -Rf a+rX /var/www/ || true
 
 reconfigure:
 ifeq '$(CONFIG_PRIVATE_FRAMEWORK)' 'n'
