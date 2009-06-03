@@ -348,25 +348,24 @@ OSC_ERR StateControl( void)
 		ThrowEvent(&mainState, FRAMESEQ_EVT);
 		
 		/*----------- prepare next capture */
-		camErr = OscCamSetupCapture( OSC_CAM_MULTI_BUFFER);
+		camErr = OscCamSetupCapture(OSC_CAM_MULTI_BUFFER);
 		if (camErr != SUCCESS)
 		{
 			OscLog(ERROR, "%s: Unable to setup capture (%d)!\n", __func__, camErr);
 			break;
 		}
-	err = OscGpioTriggerImage();
-	if (err != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to trigger capture (%d)!\n", __func__, err);
-		break;
-	}
-	
-	
-	/*----------- process frame by state engine (post-setup) Parallel with next capture */
-	ThrowEvent(&mainState, FRAMEPAR_EVT);
-	
-	/* Advance the simulation step counter. */
-	OscSimStep();
+		err = OscGpioTriggerImage();
+		if (err != SUCCESS)
+		{
+			OscLog(ERROR, "%s: Unable to trigger capture (%d)!\n", __func__, err);
+			break;
+		}
+		
+		/*----------- process frame by state engine (post-setup) Parallel with next capture */
+		ThrowEvent(&mainState, FRAMEPAR_EVT);
+		
+		/* Advance the simulation step counter. */
+		OscSimStep();
 	} /* end while ever */
 	
 	return SUCCESS;
