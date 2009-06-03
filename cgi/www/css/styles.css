@@ -43,7 +43,7 @@ h3 {
 #off .wheel {
 	width: 32px;
 	height: 32px;
-	background-image: url("../images/wheel.png");
+	background-image: url("../imgs/wheel.png");
 }
 
 #off > * {
