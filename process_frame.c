@@ -19,7 +19,9 @@
 /*! @file process_frame.c
  * @brief Contains the actual algorithm and calculations.
  */
-	#include "template.h"
+
+/* Definitions specific to this application. Also includes the Oscar main header file. */
+#include "template.h"
 
 void ProcessFrame(uint8 *pRawImg)
 {
