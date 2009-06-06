@@ -31,17 +31,17 @@ endif
 # Name for the application to produce
 APP_NAME := app-template
 
-ifeq 'CONFIG_ENABLE_DEBUG' 'y'
-CC_host := gcc $(CFLAGS) -DOSC_HOST -O2
-CC_target := bfin-uclinux-gcc $(CFLAGS) -DOSC_TARGET -O2
-else
+ifeq ('$(CONFIG_ENABLE_DEBUG)','y')
 CC_host := gcc $(CFLAGS) -DOSC_HOST -g
 CC_target := bfin-uclinux-gcc $(CFLAGS) -DOSC_TARGET -ggdb3
+else
+CC_host := gcc $(CFLAGS) -DOSC_HOST -O2
+CC_target := bfin-uclinux-gcc $(CFLAGS) -DOSC_TARGET -O2
 endif
 
-ifeq 'CONFIG_ENABLE_SIMULATION' 'y'
-CC_host += -DOSC_TARGET
-CC_target += -DOSC_TARGET
+ifeq ('$(CONFIG_ENABLE_SIMULATION)', 'y')
+CC_host += -DOSC_SIM
+CC_target += -DOSC_SIM
 endif
 
 LD_host := gcc -fPIC $(HOST_LIBS)
@@ -55,13 +55,12 @@ APPS := app-template cgi/template.cgi
 
 LIBS_host := oscar/library/libosc_host
 LIBS_target := oscar/library/libosc_target
-ifeq 'CONFIG_ENABLE_DEBUG' 'y'
+ifeq ('$(CONFIG_ENABLE_SIMULATION)', 'y')
+LIBS_target := $(LIBS_target)_sim
+endif
+ifeq ('$(CONFIG_ENABLE_DEBUG)', 'y')
 LIBS_host := $(LIBS_host)_dbg
 LIBS_target := $(LIBS_target)_dbg
-endif
-ifeq 'CONFIG_ENABLE_SIMULATION' 'y'
-LIBS_host := $(LIBS_host)_sim
-LIBS_target := $(LIBS_target)_sim
 endif
 LIBS_host := $(LIBS_host).a
 LIBS_target := $(LIBS_target).a
