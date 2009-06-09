@@ -38,19 +38,17 @@ PRODUCTS := app cgi/cgi
 SOURCES_app := $(wildcard *.c)
 SOURCES_cgi/cgi := $(wildcard cgi/*.c)
 
-ifeq ('$(CONFIG_ENABLE_DEBUG)','y')
+ifeq '$(CONFIG_ENABLE_SIMULATION)' 'y'
+CC_host += -DOSC_SIM
+CC_target += -DOSC_SIM
+endif
+ifeq '$(CONFIG_ENABLE_DEBUG)' 'y'
 CC_host := gcc $(CFLAGS) -DOSC_HOST -g
 CC_target := bfin-uclinux-gcc $(CFLAGS) -DOSC_TARGET -ggdb3
 else
 CC_host := gcc $(CFLAGS) -DOSC_HOST -O2
 CC_target := bfin-uclinux-gcc $(CFLAGS) -DOSC_TARGET -O2
 endif
-
-ifeq ('$(CONFIG_ENABLE_SIMULATION)', 'y')
-CC_host += -DOSC_SIM
-CC_target += -DOSC_SIM
-endif
-
 LD_host := gcc -fPIC
 LD_target := bfin-uclinux-gcc -elf2flt="-s 1048576"
 
@@ -62,10 +60,10 @@ APPS := $(patsubst SOURCES_%, %, $(filter SOURCES_%, $(.VARIABLES)))
 
 LIBS_host := oscar/library/libosc_host
 LIBS_target := oscar/library/libosc_target
-ifeq ('$(CONFIG_ENABLE_SIMULATION)', 'y')
+ifeq '$(CONFIG_ENABLE_SIMULATION)' 'y'
 LIBS_target := $(LIBS_target)_sim
 endif
-ifeq ('$(CONFIG_ENABLE_DEBUG)', 'y')
+ifeq '$(CONFIG_ENABLE_DEBUG)' 'y'
 LIBS_host := $(LIBS_host)_dbg
 LIBS_target := $(LIBS_target)_dbg
 endif
