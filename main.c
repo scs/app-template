@@ -164,6 +164,40 @@ OSC_ERR Unload()
 	return SUCCESS;
 }
 
+/*OSC_ERR test() {
+	OscExceptionBegin();
+	
+	OscTry();
+	
+	OscCatch();
+	
+	OscExceptionEnd();
+};*/
+
+OSC_ERR true_f() {
+OscFunctionBegin
+OscFunctionCatch
+OscFunctionEnd
+};
+
+OSC_ERR false_f() {
+OscFunctionBegin
+	OscFail_s();
+OscFunctionCatch
+OscFunctionEnd
+};
+
+OSC_ERR test() {
+OscFunctionBegin
+	OscCall(true_f);
+	OscCall(false_f);
+	
+OscFunctionCatch
+	OscMark_m("Bääääh!");
+	
+OscFunctionEnd
+};
+
 /*********************************************************************//*!
  * @brief Program entry
  * 
@@ -174,6 +208,9 @@ OSC_ERR Unload()
 int main(const int argc, const char * argv[])
 {
 	OSC_ERR err = SUCCESS;
+	
+	test();
+	OscMark_m("Done!");
 	
 	err = init(argc, argv);
 	if (err != SUCCESS)
