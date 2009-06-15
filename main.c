@@ -190,6 +190,7 @@ OscFunctionEnd
 OSC_ERR test() {
 OscFunctionBegin
 	OscCall(true_f);
+	OscMark();
 	OscCall(false_f);
 	
 OscFunctionCatch
