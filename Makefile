@@ -38,16 +38,16 @@ PRODUCTS := app cgi/cgi
 SOURCES_app := $(wildcard *.c)
 SOURCES_cgi/cgi := $(wildcard cgi/*.c)
 
-ifeq '$(CONFIG_ENABLE_SIMULATION)' 'y'
-CC_host += -DOSC_SIM
-CC_target += -DOSC_SIM
-endif
 ifeq '$(CONFIG_ENABLE_DEBUG)' 'y'
 CC_host := gcc $(CFLAGS) -DOSC_HOST -g
 CC_target := bfin-uclinux-gcc $(CFLAGS) -DOSC_TARGET -ggdb3
 else
 CC_host := gcc $(CFLAGS) -DOSC_HOST -O2
 CC_target := bfin-uclinux-gcc $(CFLAGS) -DOSC_TARGET -O2
+endif
+ifeq '$(CONFIG_ENABLE_SIMULATION)' 'y'
+CC_host += -DOSC_SIM
+CC_target += -DOSC_SIM
 endif
 LD_host := gcc -fPIC
 LD_target := bfin-uclinux-gcc -elf2flt="-s 1048576"
