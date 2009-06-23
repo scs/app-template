@@ -1,16 +1,16 @@
 /*	A collection of example applications for the LeanXcam platform.
 	Copyright (C) 2008 Supercomputing Systems AG
-	
+
 	This library is free software; you can redistribute it and/or modify it
 	under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation; either version 2.1 of the License, or (at
 	your option) any later version.
-	
+
 	This library is distributed in the hope that it will be useful, but
 	WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
 	General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with this library; if not, write to the Free Software Foundation,
 	Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -18,7 +18,7 @@
 
 /*! @file mainstate.c
  * @brief Main State machine for template application.
- * 
+ *
  * Makes use of Framework HSM module.
 	************************************************************************/
 
@@ -39,7 +39,7 @@ const Msg mainStateMsg[] = {
 
 /*********************************************************************//*!
  * @brief Inline function to throw an event to be handled by the statemachine.
- * 
+ *
  * @param pHsm Pointer to state machine
  * @param evt Event to be thrown.
  *//*********************************************************************/
@@ -52,7 +52,7 @@ void ThrowEvent(struct MainState *pHsm, unsigned int evt)
 /*********************************************************************//*!
  * @brief Checks for IPC events, schedules their handling and
  * acknowledges any executed ones.
- * 
+ *
  * @param pMainState Initalized HSM main state variable.
  * @return 0 on success or an appropriate error code.
  *//*********************************************************************/
@@ -60,7 +60,7 @@ static OSC_ERR HandleIpcRequests(MainState *pMainState)
 {
 	OSC_ERR err;
 	uint32 paramId;
-	
+
 	err = CheckIpcRequests(&paramId);
 	if (err == SUCCESS)
 	{
@@ -100,7 +100,7 @@ static OSC_ERR HandleIpcRequests(MainState *pMainState)
 		OscLog(ERROR, "%s: IPC request error! (%d)\n", __func__, err);
 		return err;
 	}
-	
+
 	/* Try to acknowledge the new or any old unacknowledged
 	 * requests. It may take several tries to succeed.*/
 	err = AckIpcRequests();
@@ -133,7 +133,7 @@ Msg const *MainState_CaptureColor(MainState *me, Msg *msg)
 {
 	struct APPLICATION_STATE *pState;
 	bool bCaptureColor;
-	
+
 	switch (msg->evt)
 	{
 	case ENTRY_EVT:
@@ -150,7 +150,7 @@ Msg const *MainState_CaptureColor(MainState *me, Msg *msg)
 	case FRAMEPAR_EVT:
 		/* Process the image. */
 		ProcessFrame(data.pCurRawImg);
-		
+
 		/* Timestamp the capture of the image. */
 		data.ipc.state.imageTimeStamp = OscSupCycGet();
 		data.ipc.state.bNewImageReady = TRUE;
@@ -159,15 +159,15 @@ Msg const *MainState_CaptureColor(MainState *me, Msg *msg)
 		/* Fill in the response and schedule an acknowledge for the request. */
 		pState = (struct APPLICATION_STATE*)data.ipc.req.pAddr;
 		memcpy(pState, &data.ipc.state, sizeof(struct APPLICATION_STATE));
-		
+
 		data.ipc.enReqState = REQ_STATE_ACK_PENDING;
 		return 0;
 	case IPC_GET_COLOR_IMG_EVT:
 		/* Write out the image to the address space of the CGI. */
 		memcpy(data.ipc.req.pAddr, data.u8ResultImage, sizeof(data.u8ResultImage));
-		
+
 		data.ipc.state.bNewImageReady = FALSE;
-		
+
 		/* Mark the request as executed, so it will be acknowledged later. */
 		data.ipc.enReqState = REQ_STATE_ACK_PENDING;
 		return 0;
@@ -189,7 +189,7 @@ Msg const *MainState_CaptureRaw(MainState *me, Msg *msg)
 {
 	struct APPLICATION_STATE *pState;
 	bool bCaptureColor;
-	
+
 	switch (msg->evt)
 	{
 	case ENTRY_EVT:
@@ -200,13 +200,13 @@ Msg const *MainState_CaptureRaw(MainState *me, Msg *msg)
 		/* Timestamp the capture of the image. */
 		data.ipc.state.imageTimeStamp = OscSupCycGet();
 		data.ipc.state.bNewImageReady = TRUE;
-		
+
 		/* Sleep here for a short while in order not to violate the vertical
 		 * blank time of the camera sensor when triggering a new image
 		 * right after receiving the old one. This can be removed if some
 		 * heavy calculations are done here. */
 		usleep(1000);
-		
+
 		return 0;
 	case FRAMEPAR_EVT:
 		return 0;
@@ -214,15 +214,15 @@ Msg const *MainState_CaptureRaw(MainState *me, Msg *msg)
 		/* Fill in the response and schedule an acknowledge for the request. */
 		pState = (struct APPLICATION_STATE*)data.ipc.req.pAddr;
 		memcpy(pState, &data.ipc.state, sizeof(struct APPLICATION_STATE));
-		
+
 		data.ipc.enReqState = REQ_STATE_ACK_PENDING;
 		return 0;
 	case IPC_GET_RAW_IMG_EVT:
 		/* Write out the raw image to the address space of the CGI. */
 		memcpy(data.ipc.req.pAddr, data.pCurRawImg, OSC_CAM_MAX_IMAGE_WIDTH*OSC_CAM_MAX_IMAGE_HEIGHT);
-		
+
 		data.ipc.state.bNewImageReady = FALSE;
-		
+
 		/* Mark the request as executed, so it will be acknowledged later. */
 		data.ipc.enReqState = REQ_STATE_ACK_PENDING;
 		return 0;
@@ -247,126 +247,63 @@ void MainStateConstruct(MainState *me)
 	StateCtor(&me->captureColor, "Capture Color", &((Hsm *)me)->top, (EvtHndlr)MainState_CaptureColor);
 }
 
-OSC_ERR StateControl( void)
-{
+OSC_ERR StateControl( void){
+OscFunctionBegin
+
 	OSC_ERR camErr, err;
 	MainState mainState;
 	uint8 *pCurRawImg = NULL;
-	
+
 	/* Setup main state machine */
 	MainStateConstruct(&mainState);
 	HsmOnStart((Hsm *)&mainState);
-	
+
 	OscSimInitialize();
-	
-	/*----------- initial capture preparation*/
-	camErr = OscCamSetupCapture( OSC_CAM_MULTI_BUFFER);
-	if (camErr != SUCCESS)
-	{
-		OscLog(ERROR, "%s: Unable to setup initial capture (%d)!\n", __func__, camErr);
-		return camErr;
-	}
-	err = OscGpioTriggerImage();
-	if (err != SUCCESS)
-	{
-	OscLog(ERROR, "%s: Unable to trigger initial capture (%d)!\n", __func__, err);
-	}
-	
-	/*----------- infinite main loop */
+
+	/* Prologue: initial acquisition setup */
+	OscCall( OscCamSetupCapture, OSC_CAM_MULTI_BUFFER);
+	OscCall( OscGpioTriggerImage);
+
+	/* Body: infinite acquisition loop */
 	while (TRUE)
 	{
-		/*----------- wait for captured picture */
+		/* Wait for captured picture. While a timeout is reported we do service
+		 * web interface and GPIO meanwhile. Otherwise we quick. One IPC request
+		 * is processed at least. */
 		while (TRUE)
 		{
-			err = HandleIpcRequests(&mainState);
-			if (err != SUCCESS)
+			OscCall( HandleIpcRequests, &mainState);
+
+			camErr = OscCamReadPicture(OSC_CAM_MULTI_BUFFER, &pCurRawImg, 0, 0);
+			if( camErr == -ETIMEOUT)
 			{
-				OscLog(ERROR, "%s: IPC error! (%d)\n", __func__, err);
-				Unload();
-				return err;
-			}
-			
-			camErr = OscCamReadPicture(OSC_CAM_MULTI_BUFFER, &pCurRawImg, 0, CAMERA_TIMEOUT);
-			if (camErr != -ETIMEOUT)
-			{
-				/* Anything other than a timeout means that we should
-				 * stop trying and analyze the situation. */
-				break;
+				OscCall( HandleIpcRequests, &mainState);
 			}
 			else
 			{
-				/*----------- procress CGI request
-				 * Check for CGI request only if ReadPicture generated a
-				 * time out. Process request directely or involve state
-				 * engine with event */
-				
-				/* Read request. */
-				err = HandleIpcRequests(&mainState);
-				if (err != SUCCESS)
-				{
-					OscLog(ERROR, "%s: IPC error! (%d)\n", __func__, err);
-					Unload();
-					return err;
-				}
-			}
-		}
-		
-		if (camErr == -EPICTURE_TOO_OLD)
-		{
-			/* We have a picture, but it already has been laying
-			 * around for a while. Most likely we won't be able to
-			 * make the deadline for this picture, so we better just
-			 * give it up and don't portrude our delay to the next
-			 * frame. */
-			OscLog(WARN, "%s: Captured picture too old!\n", __func__);
-			
-			/*----------- prepare next capture */
-			camErr = OscCamSetupCapture( OSC_CAM_MULTI_BUFFER);
-			if (camErr != SUCCESS)
-			{
-				OscLog(ERROR, "%s: Unable to setup capture (%d)!\n", __func__, camErr);
 				break;
 			}
-			err = OscGpioTriggerImage();
-			if (err != SUCCESS)
-			{
-				OscLog(ERROR, "%s: Unable to trigger capture (%d)!\n", __func__, err);
-				break;
-			}
-			continue;
+
 		}
-		else if (camErr != SUCCESS)
-		{
-			/* Fatal error, giving up. */
-			OscLog(ERROR, "%s: Unable to read picture from cam!\n", __func__);
-			break;
-		}
-		
+
+		/* A vaild image is expected. */
+		OscAssert_s( camErr == SUCCESS);
 		data.pCurRawImg = pCurRawImg;
-		
-		/*----------- process frame by state engine (pre-setup) Sequentially with next capture */
+
+		/* Process frame by state engine. Sequentially with next capture */
 		ThrowEvent(&mainState, FRAMESEQ_EVT);
-		
-		/*----------- prepare next capture */
-		camErr = OscCamSetupCapture(OSC_CAM_MULTI_BUFFER);
-		if (camErr != SUCCESS)
-		{
-			OscLog(ERROR, "%s: Unable to setup capture (%d)!\n", __func__, camErr);
-			break;
-		}
-		err = OscGpioTriggerImage();
-		if (err != SUCCESS)
-		{
-			OscLog(ERROR, "%s: Unable to trigger capture (%d)!\n", __func__, err);
-			break;
-		}
-		
-		/*----------- process frame by state engine (post-setup) Parallel with next capture */
+
+		/* Prepare next capture */
+		OscCall( OscCamSetupCapture, OSC_CAM_MULTI_BUFFER);
+		OscCall( OscGpioTriggerImage);
+
+		/* Process frame by state engine. Parallel with next capture */
 		ThrowEvent(&mainState, FRAMEPAR_EVT);
-		
+
 		/* Advance the simulation step counter. */
 		OscSimStep();
 	} /* end while ever */
-	
-	return SUCCESS;
-}
+
+OscFunctionCatch
+OscFunctionEnd
+};
