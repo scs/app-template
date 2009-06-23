@@ -1,16 +1,16 @@
 /*	A collection of example applications for the LeanXcam platform.
 	Copyright (C) 2008 Supercomputing Systems AG
-	
+
 	This library is free software; you can redistribute it and/or modify it
 	under the terms of the GNU Lesser General Public License as published by
 	the Free Software Foundation; either version 2.1 of the License, or (at
 	your option) any later version.
-	
+
 	This library is distributed in the hope that it will be useful, but
 	WITHOUT ANY WARRANTY; without even the implied warranty of
 	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser
 	General Public License for more details.
-	
+
 	You should have received a copy of the GNU Lesser General Public License
 	along with this library; if not, write to the Free Software Foundation,
 	Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -75,16 +75,14 @@ struct ARGUMENT_DATA
  * variables. */
 struct CGI_TEMPLATE
 {
-	/*! @brief Handle to the framework. */
-	void *hFramework;
 	/*! @brief IPC channel ID*/
 	OSC_IPC_CHAN_ID ipcChan;
-	
+
 	/*! @brief The raw argument string as supplied by the web server. */
 	char strArgumentsRaw[MAX_ARGUMENT_STRING_LEN];
 	/*! @brief Temporary variable for argument extraction. */
 	char strArgumentsTemp[MAX_ARGUMENT_STRING_LEN];
-	
+
 	/*! @brief The state queried from the application. */
 	struct APPLICATION_STATE appState;
 	/*! @brief The GET/POST arguments of the CGI. */

@@ -17,7 +17,7 @@
 */
 
 /*! @file main.c
- * @brief Main file of the template application. Mainly contains initialization
+ * @brief Main file of the template application. It contains initialization
  * code.
  */
 
@@ -30,7 +30,6 @@
 
 /*! @brief This stores all variables needed by the algorithm. */
 struct TEMPLATE data;
-#define FOO "dsfsdf"
 
 /*********************************************************************//*!
  * @brief Initialize everything so the application is fully operable
