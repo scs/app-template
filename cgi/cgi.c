@@ -252,14 +252,7 @@ static void FormCGIResponse()
 	fflush(stdout);
 }
 
-/*********************************************************************//*!
- * @brief Execution starting point
- *
- * Handles initialization, control and unloading.
- * @return 0 on success, -1 otherwise
- *//*********************************************************************/
-int main(){
-OscFunctionBegin
+OscFunction(mainFunction)
 	OSC_ERR err;
 	struct stat socketStat;
 
@@ -306,8 +299,21 @@ OscFunctionBegin
 
 	OscDestroy();
 
-OscFunctionCatch
+OscFunctionCatch()
 	OscDestroy();
 	OscLog(INFO, "Quit application abnormally!\n");
-OscFunctionEnd
+OscFunctionEnd()
+
+	/*********************************************************************//*!
+	 * @brief Execution starting point
+	 *
+	 * Handles initialization, control and unloading.
+	 * @return 0 on success, -1 otherwise
+	 *//*********************************************************************/
+int main(void) {
+	if (mainFunction() == SUCCESS)
+		return 0;
+	else
+		return 1;
 }
+

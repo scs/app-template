@@ -37,15 +37,14 @@ struct TEMPLATE data;
  *
  * @return SUCCESS or an appropriate error code.
  *//*********************************************************************/
-static OSC_ERR Init(const int argc, const char * argv[]){
-OscFunctionBegin
+OscFunction(static Init, const int argc, const char * argv[])
 
 	uint8 multiBufferIds[2] = {0, 1};
 
 	memset(&data, 0, sizeof(struct TEMPLATE));
 
 	/******* Create the framework **********/
-	OscCall(OscCreate,
+	OscCall( OscCreate,
 		&OscModule_cam,
 		&OscModule_bmp,
 		&OscModule_vis,
@@ -77,13 +76,12 @@ OscFunctionBegin
 	/* Register an IPC channel to the CGI for the web interface. */
 	OscCall( OscIpcRegisterChannel, &data.ipc.ipcChan, USER_INTERFACE_SOCKET_PATH, F_IPC_SERVER | F_IPC_NONBLOCKING);
 
-OscFunctionCatch
+OscFunctionCatch()
 	/* Destruct framwork due to error above. */
 	OscDestroy();
 	OscMark_m( "Initialization failed!");
 
-OscFunctionEnd
-};
+OscFunctionEnd()
 
 
 /*********************************************************************//*!
@@ -93,9 +91,7 @@ OscFunctionEnd
  * @param argv Command line argument strings.
  * @return 0 on success
  *//*********************************************************************/
-int main(const int argc, const char * argv[])
-{
-OscFunctionBegin
+OscFunction( mainFunction, const int argc, const char * argv[])
 
 	/* Initialize system */
 	OscCall( Init, argc, argv);
@@ -105,9 +101,14 @@ OscFunctionBegin
 
 	StateControl();
 
-OscFunctionCatch
+OscFunctionCatch()
 	OscDestroy();
 	OscLog(INFO, "Quit application abnormally!\n");
+OscFunctionEnd()
 
-OscFunctionEnd
+int main(const int argc, const char * argv[]) {
+	if (mainFunction(argc, argv) == SUCCESS)
+		return 0;
+	else
+		return 1;
 }

@@ -247,10 +247,9 @@ void MainStateConstruct(MainState *me)
 	StateCtor(&me->captureColor, "Capture Color", &((Hsm *)me)->top, (EvtHndlr)MainState_CaptureColor);
 }
 
-OSC_ERR StateControl( void){
-OscFunctionBegin
+OscFunction( StateControl)
 
-	OSC_ERR camErr, err;
+	OSC_ERR camErr;
 	MainState mainState;
 	uint8 *pCurRawImg = NULL;
 
@@ -304,6 +303,5 @@ OscFunctionBegin
 		OscSimStep();
 	} /* end while ever */
 
-OscFunctionCatch
-OscFunctionEnd
-};
+OscFunctionCatch()
+OscFunctionEnd()
