@@ -1,0 +1,3 @@
++ Release v1.2
+Migrated to Oscar framework version 2.0
+Web interface now uses Jquery and supports multiple languages
