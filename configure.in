@@ -1,3 +1,7 @@
+# Copying and distribution of this file, with or without modification,
+# are permitted in any medium without royalty. This file is offered as-is,
+# without any warranty.
+
 CONFIGS='PRIVATE_FRAMEWORK FRAMEWORK_PATH TARGET_IP ENABLE_DEBUG ENABLE_SIMULATION'
 
 CONFIG_PRIVATE_FRAMEWORK() {
