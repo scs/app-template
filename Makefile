@@ -112,7 +112,7 @@ build/%_target.o: %.c $(filter-out %.d, $(MAKEFILE_LIST))
 # Link targets.
 define LINK
 $(1)_host: $(patsubst %.c, build/%_host.o, $(SOURCES_$(1))) $(LIBS_host)
-	$(LD_host) -o $$@ $$^
+	$(LD_host) -o $$@ $$^ -lm
 $(1)_target: $(patsubst %.c, build/%_target.o, $(SOURCES_$(1))) $(LIBS_target)
 	$(LD_target) -o $$@ $$^ -lm -lbfdsp
 endef
