@@ -1,3 +1,7 @@
++ Release v1.2-p2
+Removed LGPL header to release code without copy-left
+
+
 + Release v1.2-p1
 ! Increased sleep duration in FRAMESEQ_EVT to prevent violation of vertical blank time of sensor
 
