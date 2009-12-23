@@ -254,6 +254,7 @@ OscFunction(mainFunction)
 		/* Form a short reply with that info and shut down. */
 		cgi.appState.enAppMode = APP_OFF;
 		OscFail_m("Algorithm is off!");
+		return -1;
 	}
 
 	/******* Create the framework **********/
