@@ -117,7 +117,7 @@ $(APP_NAME).app: $(addsuffix _target, $(PRODUCTS))
 # Controlling the gdbserver on target
 .PHONY : gdbserver-start
 gdbserver-start:
-	uxterm -e ssh root@$(CONFIG_TARGET_IP) gdbserver :7777 /mnt/app/$(APP_NAME).app/app
+	uxterm -e ssh root@$(CONFIG_TARGET_IP) "killall app; gdbserver :7777 /mnt/app/$(APP_NAME).app/app"
 
 .PHONY : gdbserver-kill
 gdbserver-kill:
