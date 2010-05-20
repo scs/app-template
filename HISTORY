@@ -1,3 +1,8 @@
++ Release v1.3
+ + make it run under uClinux v2.0 or later
+ + timeout for OscCamReadPicture
+
+
 + Release v1.2-p1
 ! Increased sleep duration in FRAMESEQ_EVT to prevent violation of vertical blank time of sensor
 
