@@ -1,3 +1,8 @@
++ Release v1.3
+ + make it run under uClinux v2.0 or later
+ + timeout for OscCamReadPicture
+ 
+ 
 + Release v1.2-p2
 Removed LGPL header to release code without copy-left
 

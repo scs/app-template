@@ -132,7 +132,7 @@ Msg const *MainState_CaptureColor(MainState *me, Msg *msg)
 		 * blank time of the camera sensor when triggering a new image
 		 * right after receiving the old one. This can be removed if some
 		 * heavy calculations are done here. */
-		usleep(2000);
+		usleep(4000);
 		return 0;
 	case FRAMEPAR_EVT:
 		/* Process the image. */
@@ -192,7 +192,7 @@ Msg const *MainState_CaptureRaw(MainState *me, Msg *msg)
 		 * blank time of the camera sensor when triggering a new image
 		 * right after receiving the old one. This can be removed if some
 		 * heavy calculations are done here. */
-		usleep(2000);
+		usleep(4000);
 
 		return 0;
 	case FRAMEPAR_EVT:
@@ -260,7 +260,7 @@ OscFunction( StateControl)
 		{
 			OscCall( HandleIpcRequests, &mainState);
 
-			camErr = OscCamReadPicture(OSC_CAM_MULTI_BUFFER, &pCurRawImg, 0, 0);
+			camErr = OscCamReadPicture(OSC_CAM_MULTI_BUFFER, &pCurRawImg, 0, 4);
 			if( camErr == -ETIMEOUT)
 			{
 				OscCall( HandleIpcRequests, &mainState);
